@@ -44,7 +44,7 @@ there are a few differences in how step definitions are written.
 
 ### Changes to Given/When/Then
 
-The function signatures for Given, When and Then callbacks have been change in order to make the step definitions
+The function signatures for Given, When and Then callbacks have been modified in order to make the step definitions
 more friendly for functional programming.  Specifically, the callback functions differ in that they
 now have two parameters, a state object and array of parameters.  The callback functions then return a new state
 object which is passed to the next step definition in the chain.
