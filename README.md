@@ -5,7 +5,7 @@ Plugin for [Vitest](https://vitest.dev/) to allow tests to be written in [Cucumb
 ## Installation
 
 ```
-$ npm install --save-dev @SamZiegler/vitest-cucumber-plugin
+$ npm install --save-dev SamZiegler/vitest-cucumber-plugin
 ```
 
 ## Examples
