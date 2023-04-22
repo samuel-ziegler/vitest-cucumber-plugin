@@ -8,6 +8,31 @@ Plugin for [Vitest](https://vitest.dev/) to allow tests to be written in [Cucumb
 $ npm install --save-dev SamZiegler/vitest-cucumber-plugin
 ```
 
+## Usage
+
+
+### vite.config.js
+
+Import the plugin then add it to the plugins array.  Change test.inclue to look for .feature files.
+
+```
+import { defineConfig } from 'vitest/config'
+import vitestCucumberPlugin from 'vitest-cucumber-plugin';
+
+export default defineConfig({
+    plugins: [vitestCucumberPlugin()],
+    test: {
+        include : [ '**/*.feature' ]
+    },
+})
+```
+
+### Writing tests
+
+Put feature files into the 'features/' directory and step definitions into the 'features/step_definitions/' directory.
+
+See below for the differences between tests written for Cucumber and for this plugin.
+
 ## Examples
 
 Look in the [tests directory](tests) for examples on how to use the plugin.
