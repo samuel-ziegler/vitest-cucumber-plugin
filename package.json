@@ -1,0 +1,32 @@
+{
+    "name": "vitest-cucumber-plugin",
+    "version": "0.0.1",
+    "description": "Plugin for Vitest which allows for tests to be written in Cucumber format.",
+    "keywords": [
+        "vite",
+        "vitest",
+        "cucumber"
+    ],
+    "homepage": "https://github.com/SamZiegler/vitest-cucumber-plugin#readme",
+    "bugs": {
+        "url": "https://github.com/SamZiegler/vitest-cucumber-plugin/issues"
+    },
+    "license": "MIT",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "nearley": "nearleyc src/gherkin.ne -o src/gherkin.umd.js && rollup -c rollup-nearley.js",
+        "test" : "./run-tests"
+    },
+    "dependencies": {
+        "@cucumber/cucumber-expressions": "^16.1.2",
+        "moo": "^0.5.2",
+        "lodash": "^4.17.21",
+        "nearley": "^2.20.1"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^24.1.0",
+        "@types/lodash": "^4.14.194",
+        "rollup": "^3.20.7"
+    }
+}
