@@ -42,9 +42,13 @@ const compileFeatureToJS = (featureSrc) => {
     parser.feed(featureSrc);
 
     if (parser.results.length == 0) {
-        throw new Error('Unknown parser error');
+        throw new Error('Unexpected end of file');
     }
     log.debug('parsing result: '+JSON.stringify(parser.results,null,2));
+    if (parser.results.length > 1) {
+        throw new Error('Ambiguous parsing: '+parser.results.length);
+    }
+    
     const results = parser.results;
     const feature = results[0];
     const name = feature.name;

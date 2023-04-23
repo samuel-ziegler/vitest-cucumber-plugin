@@ -1,18 +1,19 @@
 @{%
 const fp = require('lodash/fp.js');
 const moo = require('moo');
+const log = require('./logger.js').log;
 const lexer = moo.compile({
   newline : { match : '\n', lineBreaks : true },
   ws : /[ \t]+/,
   colon : ':',
   pipe : '|',
   backSlash : '\\',
+  scenarioOutline : 'Scenario Outline',
+  scenarioTemplate : 'Scenario Template',
   word : {
     match : /[^ \t\n:|\\]+/,
     type : moo.keywords({
       feature : 'Feature',
-      scenarioOutline : 'Scenario Outline',
-      scenarioTemplate : 'Scenario Template',
       examples : 'Examples',
       scenarios : 'Scenarios',
       given : 'Given',
@@ -27,69 +28,56 @@ const lexer = moo.compile({
 
 @lexer lexer
 
-main -> feature {% id %}
+main -> feature
 
 feature -> featureStatement freeform statements {%
-  (data) => { return { type : 'feature', name : data[0], description : data[1], statements : data[2] } }
+  (data) => { return { name : data[0].trim(), description : data[1].trim(), statements : data[2] } }
 %}
-featureStatement -> _ %feature _ %colon _ featureName %newline {%
-  data => data[5]
-%}
-featureName -> text {% data => data[0] %}
+featureStatement -> _ %feature _ %colon text %newline {% data => data[4] %}
 
 statements -> null {% data => [] %}
   | statements example {% data => fp.concat(data[0],data[1]) %}
-  | statements scenarioOutline {% data => fp.concat(data[0],data[1]) %}
-  | statements emptyLine {% data => data[0] %}
+  | statements scenarioOutline
 
-example -> exampleStatement steps {%
-  (data) => { return { type : 'example', name : data[0], steps : data[1] } }
-%}
-exampleStatement -> _ exampleKeyword _ %colon _ text %newline {% data => data[5] %}
+example -> exampleStatement steps {% (data) => { return { type : 'example', name : data[0], steps : data[1] } } %}
+exampleStatement -> _ exampleKeyword _ %colon text %newline {% data => data[4] %}
 exampleKeyword -> %example | %scenario
 
-scenarioOutline -> scenarioStatement steps examples {%
-  (data) => { return { type : 'scenarioOutline', name : data[0], steps : data[1], examples : data[2] } }
-%}
-scenarioStatement -> _ scenarioOutlineKeyword text %newline {% data => data[2] %}
+scenarioOutline -> scenarioOutlineStatement steps examples 
+scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline
 scenarioOutlineKeyword -> %scenarioOutline | %scenarioTemplate
 
-examples -> examplesStatement dataTable {%
-  (data) => { return { type : 'Examples', examples : data[1] }; }
+examples -> examplesStatement dataTable
+examplesStatement -> _ examplesKeyword _ %colon text %newline
+examplesKeyword -> %examples | %scenarios
+
+dataTable -> null 
+  | dataTable dataTableRow
+
+dataTableRow -> _ %pipe dataTableColumns %newline
+
+dataTableColumns -> null 
+  | dataTableColumns text %pipe
+
+steps -> null {% data => [] %}
+  | steps step {% data => fp.concat(data[0],data[1]) %}
+
+step -> _ stepKeyword text %newline {% data => { return { type : data[1], step : data[2] } } %}
+
+stepKeyword -> %given {% data => 'given' %}
+  | %when {% data => 'when' %}
+  | %then {% data => 'then' %}
+
+text -> null {% data => '' %}
+  | text %word {% data => data[0]+data[1].value %}
+  | text %ws {% data => data[0]+data[1].value %}
+
+freeform -> null {% data => '' %}
+  | freeform text %newline {% (data) => {
+  log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
+  return data[0]+data[1]+'\n'
+}
 %}
-examplesStatement -> _ examplesKeyword %newline
-examplesKeyword -> %examples {% data => data[0].type %}
-  | %scenarios {% data => data[0].type %}
 
-dataTable -> null {% data => [] %}
-   | dataTable dataTableRow {% (data) => { console.log('row',data[1]); return fp.concat(data[0],data[1]) } %}
-
-dataTableRow -> dataTableRow %newline {% data => data[0] %}
-
-steps -> given when then {% (data) => { return { given : data[0], when : data[1], then : data[2] } } %}
-
-given -> null {% data => [] %}
-  | given _ %given _ text %newline {% data => fp.concat(data[0],{ text : data[4] }) %}
-  | given emptyLine {% id %}
-
-when -> null {% data => [] %}
-  | when _ %when _ text %newline {% data => fp.concat(data[0],{ text : data[4] }) %}
-  | when emptyLine {% id %}
-
-then -> null {% data => [] %}
-  | then _ %then _ text %newline {% data => fp.concat(data[0],{ text : data[4] }) %}
-  | then emptyLine {% id %}
-
-text -> null {% data => "" %}
-  | text %word _ {% data => data[0]+data[1]+data[2] %}
-
-freeform -> null {% data => "" %}
-  | freeform _ text %newline {% data => data[0] + data[2] %}
-
-_ -> null {% data => "" %}
+_ -> null {% data => '' %}
   | %ws {% data => data[0].value %}
-
-newlines -> null
-  | newlines _ %newline
-
-emptyLine -> _ %newline
