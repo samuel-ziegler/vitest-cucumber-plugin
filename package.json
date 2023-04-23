@@ -16,13 +16,14 @@
     "type": "module",
     "scripts": {
         "nearley": "nearleyc src/gherkin.ne -o src/gherkin.umd.js && rollup -c rollup-nearley.js",
-        "test" : "./run-tests"
+        "test": "./run-tests"
     },
     "dependencies": {
         "@cucumber/cucumber-expressions": "^16.1.2",
-        "moo": "^0.5.2",
         "lodash": "^4.17.21",
-        "nearley": "^2.20.1"
+        "moo": "^0.5.2",
+        "nearley": "^2.20.1",
+        "pino": "^8.11.0"
     },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^24.1.0",

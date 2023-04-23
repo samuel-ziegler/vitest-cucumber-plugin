@@ -3,6 +3,7 @@ import gherkin from './gherkin.js';
 import { readdir } from 'node:fs/promises';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
+import { log } from './logger.js';
 
 const featureRegex = /\.feature$/;
 
@@ -29,15 +30,21 @@ const generateExample = (example) => {
     
     const code = `  describe('${escape(example.name)}', () => {
     var state = {};${tests}
-  });`;
+  });
+`;
     return code;
 }
 
 const compileFeatureToJS = (featureSrc) => {
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
 
+    log.debug('parsing src: '+featureSrc);
     parser.feed(featureSrc);
-    //console.log(JSON.stringify(parser.results,null,2));
+
+    if (parser.results.length == 0) {
+        throw new Error('Unknown parser error');
+    }
+    log.debug('parsing result: '+JSON.stringify(parser.results,null,2));
     const results = parser.results;
     const feature = results[0];
     const name = feature.name;
@@ -51,10 +58,9 @@ import { Test, importStepDefinitions } from 'vitest-cucumber-plugin';
 await importStepDefinitions();
 
 describe('${escape(name)}', () => {
-${examples}
-});
+${examples}});
 `;
-    //console.log(code);
+    log.debug(code);
 
     return code;
 }
