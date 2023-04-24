@@ -1,32 +1,15 @@
-import nearley from 'nearley';
-import gherkin from './gherkin.js';
 import { readdir } from 'node:fs/promises';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
 import { parameterizeText } from './parameterize.js';
 import { generateFeature } from './generate/index.js';
 import { log } from './logger.js';
+import { parse } from './parse.js';
 
 const featureRegex = /\.feature$/;
 
-const escape = (str) => str.replace(/'/g,"\\'");
-
 const compileFeatureToJS = (featureSrc) => {
-    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
-
-    log.debug('parsing src: '+featureSrc);
-    parser.feed(featureSrc);
-
-    if (parser.results.length == 0) {
-        throw new Error('Unexpected end of file');
-    }
-    log.debug('parsing result: '+JSON.stringify(parser.results,null,2));
-    if (parser.results.length > 1) {
-        throw new Error('Ambiguous parsing: '+parser.results.length);
-    }
-    
-    const results = parser.results;
-    const feature = results[0];
+    const feature = parse(featureSrc);
 
     const code = generateFeature(feature);
 
