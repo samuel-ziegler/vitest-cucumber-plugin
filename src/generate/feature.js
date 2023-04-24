@@ -19,11 +19,12 @@ export const generateFeature = (config,feature) => {
     },'')(statements);
 
     const skip = shouldSkip(config,feature.tags) ? '.skip' : '';
+    const configStr = JSON.stringify(config);
 
     const code = `import { expect, test, describe } from 'vitest';
 import { Test, importStepDefinitions } from 'vitest-cucumber-plugin';
 
-await importStepDefinitions();
+await importStepDefinitions(${configStr});
 
 describe${skip}('${escape(feature.type.name)}: ${escape(name)}', () => {
 ${testStatements}});
