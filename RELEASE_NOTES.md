@@ -1,3 +1,4 @@
+* v0.1.0 : Added basic support for tags.
 * v0.0.5 : Implemented keyword aliases and comments
 * v0.0.4 : Implemented Data Tables
 * v0.0.3 : Implemented Scenario Outline
