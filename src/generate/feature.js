@@ -8,6 +8,9 @@ export const generateFeature = (feature) => {
     const statements = feature.statements;
 
     const testStatements = _.reduce((testStatements,statement) => {
+        if (feature.background) {
+            statement = _.set('background',feature.background,statement);
+        }
         if (statement.type.type === 'example') {
             return testStatements + generateExample(statement);
         } else if (statement.type.type === 'scenarioOutline') {

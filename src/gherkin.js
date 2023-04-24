@@ -71,6 +71,7 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	      examples : ['Examples','Scenarios'],
 	      step : ['Given','When','Then','And','But'],
 	      example : ['Example','Scenario'],
+	      background : 'Background',
 	    }),
 	  },
 	});
@@ -78,11 +79,18 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    Lexer: lexer,
 	    ParserRules: [
 	    {"name": "main", "symbols": ["emptyLines", "feature"], "postprocess": data => data[1]},
-	    {"name": "feature", "symbols": ["featureStatement", "freeform", "statements"], "postprocess": 
-	        (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
+	    {"name": "feature", "symbols": ["featureStatement", "freeform", "background", "statements"], "postprocess": 
+	        (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
 	        },
 	    {"name": "featureStatement", "symbols": ["_", (lexer.has("feature") ? {type: "feature"} : feature), "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
 	        (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
+	        },
+	    {"name": "background", "symbols": [], "postprocess": data => null},
+	    {"name": "background", "symbols": ["backgroundStatement", "freeform", "steps"], "postprocess": 
+	        data => fp.assign(data[0],{ description : data[1].trim(), steps : data[2] })
+	        },
+	    {"name": "backgroundStatement", "symbols": ["_", (lexer.has("background") ? {type: "background"} : background), "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+	        (data) => { return { type : { type : 'background', name : data[1].value }, name : data[4].trim() } }
 	        },
 	    {"name": "statement", "symbols": ["example"], "postprocess": data => data[0]},
 	    {"name": "statement", "symbols": ["scenarioOutline"], "postprocess": data => data[0]},
@@ -112,12 +120,12 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "dataTableRow", "symbols": ["_", (lexer.has("pipe") ? {type: "pipe"} : pipe), "dataTableColumns", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[2]},
 	    {"name": "dataTableColumns", "symbols": [], "postprocess": data => []},
 	    {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => fp.concat(data[0],data[1].trim())},
-	    {"name": "steps", "symbols": [], "postprocess": data => []},
-	    {"name": "steps", "symbols": ["steps", "step", "dataTable"], "postprocess": 
-	        (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
-	        },
-	    {"name": "steps", "symbols": ["steps", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]},
+	    {"name": "steps", "symbols": ["stepAndTable", "moreSteps"], "postprocess": data => fp.concat(data[0],data[1])},
+	    {"name": "moreSteps", "symbols": [], "postprocess": data => []},
+	    {"name": "moreSteps", "symbols": ["moreSteps", "stepAndTable"], "postprocess": data => fp.concat(data[0],data[1])},
+	    {"name": "moreSteps", "symbols": ["moreSteps", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]},
 	    {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
+	    {"name": "stepAndTable", "symbols": ["step", "dataTable"], "postprocess": data => fp.set('dataTable',data[1],data[0])},
 	    {"name": "stepKeyword", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": (data) => { return { type : 'step', name : data[0].value } }},
 	    {"name": "text", "symbols": [], "postprocess": data => ''},
 	    {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
@@ -127,6 +135,7 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "text", "symbols": ["text", (lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "text", "symbols": ["text", (lexer.has("background") ? {type: "background"} : background)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "bolText", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws), (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[1].value},
 	    {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
 	    {"name": "freeform", "symbols": [], "postprocess": data => ''},

@@ -18,6 +18,7 @@ const lexer = moo.compile({
       examples : ['Examples','Scenarios'],
       step : ['Given','When','Then','And','But'],
       example : ['Example','Scenario'],
+      background : 'Background',
     }),
   },
 });
@@ -27,11 +28,20 @@ const lexer = moo.compile({
 
 main -> emptyLines feature {% data => data[1] %}
 
-feature -> featureStatement freeform statements {%
-  (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
+feature -> featureStatement freeform background statements {%
+  (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
 %}
 featureStatement -> _ %feature _ %colon text %newline {%
   (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
+%}
+
+background -> null {% data => null %}
+  | backgroundStatement freeform steps {%
+  data => fp.assign(data[0],{ description : data[1].trim(), steps : data[2] })
+%}
+
+backgroundStatement -> _ %background _ %colon text %newline {%
+  (data) => { return { type : { type : 'background', name : data[1].value }, name : data[4].trim() } }
 %}
 
 statement -> example {% data => data[0] %}
@@ -71,13 +81,14 @@ dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
 dataTableColumns -> null {% data => [] %}
   | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
 
-steps -> null {% data => [] %}
-  | steps step dataTable {%
-  (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
-%}
-  | steps %emptyLine {% data => data[0] %}
+steps -> stepAndTable moreSteps {% data => fp.concat(data[0],data[1]) %}
+
+moreSteps -> null {% data => [] %}
+  | moreSteps stepAndTable {% data => fp.concat(data[0],data[1]) %}
+  | moreSteps %emptyLine {% data => data[0] %}
 
 step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
+stepAndTable -> step dataTable {% data => fp.set('dataTable',data[1],data[0]) %}
 
 stepKeyword -> %step {% (data) => { return { type : 'step', name : data[0].value } } %}
 
@@ -89,6 +100,7 @@ text -> null {% data => '' %}
   | text %example {% data => data[0]+data[1].value %}
   | text %examples {% data => data[0]+data[1].value %}
   | text %scenarioOutline {% data => data[0]+data[1].value %}
+  | text %background {% data => data[0]+data[1].value %}
 
 bolText -> %ws %word {% data => data[1].value %}
   | %word {% data => data[0].value %}
