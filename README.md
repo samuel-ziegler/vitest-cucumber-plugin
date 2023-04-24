@@ -110,3 +110,4 @@ This plugin is not yet feature complete.  Here is the list of features from Cucu
 * Rule keyword
 * Doc strings
 * Data Table escape characters
+* Boolean expression support for tags
