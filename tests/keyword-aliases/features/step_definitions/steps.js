@@ -15,3 +15,16 @@ Then('I don\'t have a {string}',(state,[ item ],data) => {
     expect(state.items).not.toContain(item);
     return state;
 });
+
+Given('there are {int} cucumbers',(state,[ count ],data) => {
+    return _.set('cucumbers',count,state);
+});
+
+When('I eat {int} cucumbers',(state,[ count ],data) => {
+    return _.set('cucumbers',state.cucumbers - count,state);
+});
+
+Then('I should have {int} cucumbers',(state,[ count ],data) => {
+    expect(state.cucumbers).toEqual(count);
+    return state;
+});
