@@ -3,6 +3,7 @@ const fp = require('lodash/fp.js');
 const moo = require('moo');
 const log = require('./logger.js').log;
 const lexer = moo.compile({
+  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
   newline : { match : '\n', lineBreaks : true },
   ws : /[ \t]+/,
   colon : ':',
@@ -24,7 +25,7 @@ const lexer = moo.compile({
 
 @lexer lexer
 
-main -> feature {% id %}
+main -> emptyLines feature {% data => data[1] %}
 
 feature -> featureStatement freeform statements {%
   (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
@@ -74,7 +75,7 @@ steps -> null {% data => [] %}
   | steps step dataTable {%
   (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
 %}
-  | steps _ %newline {% data => data[0] %}
+  | steps %emptyLine {% data => data[0] %}
 
 step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
 
@@ -93,16 +94,15 @@ bolText -> %ws %word {% data => data[1].value %}
   | %word {% data => data[0].value %}
 
 freeform -> null {% data => '' %}
-  | freeform %newline {% data => data[0]+data[1].value %}
   | freeform bolText text %newline {% (data) => {
   log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
   return data[0]+data[1]+data[2]+'\n'
 }
 %}
+  | freeform %emptyLine {% data => data[0]+'\n' %}
 
 _ -> null {% data => '' %}
   | %ws {% data => data[0].value %}
 
-emptyLines -> null
-  | emptyLines _ %newline
-
+emptyLines -> null {% data => '' %}
+  | emptyLines %emptyLine {% data => data[0]+'\n' %}

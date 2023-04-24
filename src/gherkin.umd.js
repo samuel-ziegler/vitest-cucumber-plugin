@@ -7,6 +7,7 @@ const fp = require('lodash/fp.js');
 const moo = require('moo');
 const log = require('./logger.js').log;
 const lexer = moo.compile({
+  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
   newline : { match : '\n', lineBreaks : true },
   ws : /[ \t]+/,
   colon : ':',
@@ -27,7 +28,7 @@ const lexer = moo.compile({
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "main", "symbols": ["feature"], "postprocess": id},
+    {"name": "main", "symbols": ["emptyLines", "feature"], "postprocess": data => data[1]},
     {"name": "feature", "symbols": ["featureStatement", "freeform", "statements"], "postprocess": 
         (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
         },
@@ -66,7 +67,7 @@ var grammar = {
     {"name": "steps", "symbols": ["steps", "step", "dataTable"], "postprocess": 
         (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
         },
-    {"name": "steps", "symbols": ["steps", "_", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]},
+    {"name": "steps", "symbols": ["steps", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]},
     {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
     {"name": "stepKeyword", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": (data) => { return { type : 'step', name : data[0].value } }},
     {"name": "text", "symbols": [], "postprocess": data => ''},
@@ -80,16 +81,16 @@ var grammar = {
     {"name": "bolText", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws), (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[1].value},
     {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
     {"name": "freeform", "symbols": [], "postprocess": data => ''},
-    {"name": "freeform", "symbols": ["freeform", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]+data[1].value},
     {"name": "freeform", "symbols": ["freeform", "bolText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
           log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
           return data[0]+data[1]+data[2]+'\n'
         }
         },
+    {"name": "freeform", "symbols": ["freeform", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]+'\n'},
     {"name": "_", "symbols": [], "postprocess": data => ''},
     {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0].value},
-    {"name": "emptyLines", "symbols": []},
-    {"name": "emptyLines", "symbols": ["emptyLines", "_", (lexer.has("newline") ? {type: "newline"} : newline)]}
+    {"name": "emptyLines", "symbols": [], "postprocess": data => ''},
+    {"name": "emptyLines", "symbols": ["emptyLines", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]+'\n'}
 ]
   , ParserStart: "main"
 }
