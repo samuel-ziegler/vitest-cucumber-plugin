@@ -18,11 +18,11 @@ const compileFeatureToJS = (config,featureSrc) => {
     return code;
 }
 
-export const importStepDefinitions = async () => {
-    const stepDefinitionDirectory = 'features/step_definitions';
+export const importStepDefinitions = async (config) => {
+    const stepDefinitionDirectory = config.root+'/features/step_definitions';
     const files = await readdir(stepDefinitionDirectory);
     for (const file of files) {
-        const stepDefinition = './'+stepDefinitionDirectory+'/'+file;
+        const stepDefinition = stepDefinitionDirectory+'/'+file;
         await import(stepDefinition);
     }
 };
@@ -54,7 +54,9 @@ export default function vitestCucumberPlugin() {
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
+            log.debug('config: resolvedConfig:'+JSON.stringify(resolvedConfig,null,2));
             config = _.get('test.cucumber',resolvedConfig);
+            config = _.set('root',resolvedConfig.root,config);
             log.debug('config: '+JSON.stringify(config));
         },
         transform : async (src,id) => {
