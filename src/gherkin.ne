@@ -6,6 +6,7 @@ const lexer = moo.compile({
   newline : { match : '\n', lineBreaks : true },
   ws : /[ \t]+/,
   colon : ':',
+  star : '*',
   pipe : '|',
   backSlash : '\\',
   scenarioOutline : 'Scenario Outline',
@@ -21,6 +22,8 @@ const lexer = moo.compile({
       then : 'Then',
       example : 'Example',
       scenario : 'Scenario',
+      and : 'And',
+      but : 'But',
     }),
   },
 });
@@ -86,6 +89,9 @@ step -> _ stepKeyword text %newline {% data => { return { type : data[1], text :
 stepKeyword -> %given {% (data) => { return { type : 'given', name : data[0].value } } %}
   | %when {% (data) => { return { type : 'when', name : data[0].value } } %}
   | %then {% (data) => { return { type : 'then', name : data[0].value } } %}
+  | %and {% (data) => { return { type : 'and', name : data[0].value } } %}
+  | %but {% (data) => { return { type : 'but', name : data[0].value } } %}
+  | %star {% (data) => { return { type : 'star', name : data[0].value } } %}
 
 text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}
@@ -97,10 +103,14 @@ text -> null {% data => '' %}
   | text %scenario {% data => data[0]+data[1].value %}
   | text %example {% data => data[0]+data[1].value %}
 
+bolText -> %ws %word {% data => data[1].value %}
+  | %word {% data => data[0].value %}
+
 freeform -> null {% data => '' %}
-  | freeform text %newline {% (data) => {
+  | freeform %newline {% data => data[0]+data[1].value %}
+  | freeform bolText text %newline {% (data) => {
   log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
-  return data[0]+data[1]+'\n'
+  return data[0]+data[1]+data[2]+'\n'
 }
 %}
 

@@ -4,9 +4,14 @@ import _ from 'lodash/fp';
 
 const addItem = (state,[ item ],data) => { return { items : _.concat(state.items ? state.items : [],item) } };
 
-Given('you have a {string}',addItem);
-Then('you get a {string}',addItem);
-Then('you have the following items:',(state,params,data) => {
+Given('I have a {string}',addItem);
+Then('I get a {string}',addItem);
+Then('I have the following items:',(state,params,data) => {
     const items = _.flatten(data);
     expect(state.items).toEqual(items);
+    return state;
+});
+Then('I don\'t have a {string}',(state,[ item ],data) => {
+    expect(state.items).not.toContain(item);
+    return state;
 });

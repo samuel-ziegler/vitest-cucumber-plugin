@@ -60,6 +60,7 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	  newline : { match : '\n', lineBreaks : true },
 	  ws : /[ \t]+/,
 	  colon : ':',
+	  star : '*',
 	  pipe : '|',
 	  backSlash : '\\',
 	  scenarioOutline : 'Scenario Outline',
@@ -75,6 +76,8 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	      then : 'Then',
 	      example : 'Example',
 	      scenario : 'Scenario',
+	      and : 'And',
+	      but : 'But',
 	    }),
 	  },
 	});
@@ -127,6 +130,9 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "stepKeyword", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": (data) => { return { type : 'given', name : data[0].value } }},
 	    {"name": "stepKeyword", "symbols": [(lexer.has("when") ? {type: "when"} : when)], "postprocess": (data) => { return { type : 'when', name : data[0].value } }},
 	    {"name": "stepKeyword", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": (data) => { return { type : 'then', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("and") ? {type: "and"} : and)], "postprocess": (data) => { return { type : 'and', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("but") ? {type: "but"} : but)], "postprocess": (data) => { return { type : 'but', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("star") ? {type: "star"} : star)], "postprocess": (data) => { return { type : 'star', name : data[0].value } }},
 	    {"name": "text", "symbols": [], "postprocess": data => ''},
 	    {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
@@ -136,10 +142,13 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "text", "symbols": ["text", (lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "bolText", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws), (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[1].value},
+	    {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
 	    {"name": "freeform", "symbols": [], "postprocess": data => ''},
-	    {"name": "freeform", "symbols": ["freeform", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
+	    {"name": "freeform", "symbols": ["freeform", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "freeform", "symbols": ["freeform", "bolText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
 	          log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
-	          return data[0]+data[1]+'\n'
+	          return data[0]+data[1]+data[2]+'\n'
 	        }
 	        },
 	    {"name": "_", "symbols": [], "postprocess": data => ''},
