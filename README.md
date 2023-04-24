@@ -111,5 +111,4 @@ This plugin is not yet feature complete.  Here is the list of features from Cucu
 * Background keyword
 * Doc strings
 * Tags
-* Comments
 * Data Table escape characters
