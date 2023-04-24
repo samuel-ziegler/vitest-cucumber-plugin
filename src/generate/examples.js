@@ -3,6 +3,31 @@ import { generateTests } from './tests.js';
 import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
 
+const createParameterMap = (parameters,values) => {
+    const parameterMap = _.reduce((parameterMap,value) => {
+        return {
+            map : _.set(parameters[parameterMap.index],value,parameterMap.map),
+            index : parameterMap.index + 1
+        };
+    },{ map : {}, index : 0 })(values);
+
+    return parameterMap.map;
+}
+
+const generateAllTests = (steps,parameters,parameterValues) => {
+    const allTests = _.reduce((allTests,values) => {
+        const parameterMap = createParameterMap(parameters,values);
+        log.debug('parameterMap : '+JSON.stringify(parameterMap));
+
+        const tests = generateTests(steps,parameterMap,'    ');
+
+        return { tests : allTests.tests + `
+      describe('${allTests.index}',() => {${tests}
+      });`, index : allTests.index + 1 };
+    },{ tests : '', index : 0})(parameterValues);
+
+    return allTests.tests;
+}
 
 export const generateExamples = (steps,examplesStatement) => {
     log.debug('generateExamples steps:'+JSON.stringify(steps)+' examples: '+JSON.stringify(examplesStatement));
@@ -13,24 +38,8 @@ export const generateExamples = (steps,examplesStatement) => {
     log.debug('generateExamples parameters:'+JSON.stringify(parameters)+' parameterValues: '+
               JSON.stringify(parameterValues));
 
-    const allTests = _.reduce((allTests,values) => {
-        const parameterMap = _.reduce((parameterMap,value) => {
-            return {
-                map : _.set(parameters[parameterMap.index],value,parameterMap.map),
-                index : parameterMap.index + 1
-            };
-        },{ map : {}, index : 0 })(values);
-        
-        log.debug('parameterMap : '+JSON.stringify(parameterMap.map));
-
-        const tests = generateTests(steps,parameterMap.map,'    ');
-        
-        return { tests : allTests.tests + `
-      describe('${allTests.index}',() => {${tests}
-      });`, index : allTests.index + 1 };
-    },{ tests : '', index : 0})(parameterValues);
-    
-    const code = `    describe('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests.tests}
+    const allTests = generateAllTests(steps,parameters,parameterValues);
+    const code = `    describe('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
     });`;
     return code;
 }
