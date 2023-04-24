@@ -6,6 +6,7 @@ const lexer = moo.compile({
   emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
   newline : { match : '\n', lineBreaks : true },
   ws : /[ \t]+/,
+  at : '@',
   colon : ':',
   step : '*',
   pipe : '|',
@@ -18,6 +19,7 @@ const lexer = moo.compile({
       examples : ['Examples','Scenarios'],
       step : ['Given','When','Then','And','But'],
       example : ['Example','Scenario'],
+      background : 'Background',
     }),
   },
 });
@@ -25,13 +27,30 @@ const lexer = moo.compile({
 
 @lexer lexer
 
-main -> emptyLines feature {% data => data[1] %}
+main -> emptyLines tags feature {% data => fp.set('tags',data[1],data[2]) %}
 
-feature -> featureStatement freeform statements {%
-  (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
+feature -> featureStatement freeform background statements {%
+  (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
 %}
 featureStatement -> _ %feature _ %colon text %newline {%
   (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
+%}
+
+tags -> null {% data => [] %}
+  | _ tag tagList %newline {% data => fp.concat(data[1],data[2]) %}
+
+tagList -> null {% data => [] %}
+  | tagList %ws tag {% data => fp.concat(data[0],data[2]) %}
+
+tag -> %at %word {% data => data[1].value.trim() %}
+
+background -> null {% data => null %}
+  | backgroundStatement freeform steps {%
+  data => fp.assign(data[0],{ description : data[1].trim(), steps : data[2] })
+%}
+
+backgroundStatement -> _ %background _ %colon text %newline {%
+  (data) => { return { type : { type : 'background', name : data[1].value }, name : data[4].trim() } }
 %}
 
 statement -> example {% data => data[0] %}
@@ -40,14 +59,14 @@ statement -> example {% data => data[0] %}
 statements -> null {% data => [] %}
   | statements statement {% data => fp.concat(data[0],data[1]) %}
 
-example -> exampleStatement steps {% (data) => fp.assign(data[0],{ steps : data[1] }) %}
+example -> tags exampleStatement steps {% (data) => fp.assign(data[1],{ tags : data[0], steps : data[2] }) %}
 exampleStatement -> _ exampleKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 %}
 exampleKeyword -> %example {% data => data[0].value %}
 
-scenarioOutline -> scenarioOutlineStatement steps examplesList {%
-  data => fp.assign(data[0],{ steps : data[1], examples : data[2] })
+scenarioOutline -> tags scenarioOutlineStatement steps examplesList {%
+  data => fp.assign(data[1],{ tags : data[0], steps : data[2], examples : data[3] })
 %}
 scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
@@ -57,7 +76,9 @@ scenarioOutlineKeyword -> %scenarioOutline {% data => data[0].value %}
 examplesList -> null {% data => [] %}
   | examplesList examples {% data => fp.concat(data[0],data[1]) %}
 
-examples -> examplesStatement dataTable emptyLines {% data => fp.assign(data[0],{ dataTable : data[1] }) %}
+examples -> tags examplesStatement dataTable emptyLines {%
+  data => fp.assign(data[1],{ tags : data[0], dataTable : data[2] })
+%}
 examplesStatement -> _ examplesKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
 %}
@@ -71,13 +92,14 @@ dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
 dataTableColumns -> null {% data => [] %}
   | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
 
-steps -> null {% data => [] %}
-  | steps step dataTable {%
-  (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
-%}
-  | steps %emptyLine {% data => data[0] %}
+steps -> stepAndTable moreSteps {% data => fp.concat(data[0],data[1]) %}
+
+moreSteps -> null {% data => [] %}
+  | moreSteps stepAndTable {% data => fp.concat(data[0],data[1]) %}
+  | moreSteps %emptyLine {% data => data[0] %}
 
 step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
+stepAndTable -> step dataTable {% data => fp.set('dataTable',data[1],data[0]) %}
 
 stepKeyword -> %step {% (data) => { return { type : 'step', name : data[0].value } } %}
 
@@ -89,6 +111,7 @@ text -> null {% data => '' %}
   | text %example {% data => data[0]+data[1].value %}
   | text %examples {% data => data[0]+data[1].value %}
   | text %scenarioOutline {% data => data[0]+data[1].value %}
+  | text %background {% data => data[0]+data[1].value %}
 
 bolText -> %ws %word {% data => data[1].value %}
   | %word {% data => data[0].value %}

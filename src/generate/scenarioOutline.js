@@ -1,12 +1,15 @@
 import _ from 'lodash/fp.js';
 import { generateExamples } from './examples.js';
-import { escape } from './util.js';
+import { escape, shouldSkip } from './util.js';
 
-export const generateScenarioOutline = (scenarioOutline) => {
+export const generateScenarioOutline = (config,scenarioOutline) => {
     const examplesStatements = _.reduce((examplesStatements,examplesStatement) => {
-        return examplesStatements + generateExamples(scenarioOutline.steps,examplesStatement);
+        return examplesStatements + generateExamples(config,scenarioOutline.steps,examplesStatement);
     },'')(scenarioOutline.examples);
-    const code = `  describe('${escape(scenarioOutline.type.name)}: ${escape(scenarioOutline.name)}', () => {
+
+    const skip = shouldSkip(config,scenarioOutline.tags) ? '.skip' : '';
+
+    const code = `  describe${skip}('${escape(scenarioOutline.type.name)}: ${escape(scenarioOutline.name)}', () => {
 ${examplesStatements}
   });
 `;

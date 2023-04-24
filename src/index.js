@@ -8,10 +8,10 @@ import { parse } from './parse.js';
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS = (featureSrc) => {
+const compileFeatureToJS = (config,featureSrc) => {
     const feature = parse(featureSrc);
 
-    const code = generateFeature(feature);
+    const code = generateFeature(config,feature);
 
     log.debug(code);
 
@@ -49,11 +49,17 @@ export const DataTable = (dataTable) => {
 }
 
 export default function vitestCucumberPlugin() {
+    let config;
+    
     return {
         name : 'vitest-cucumber-transform',
+        configResolved : (resolvedConfig) => {
+            config = _.get('test.cucumber',resolvedConfig);
+            log.debug('config: '+JSON.stringify(config));
+        },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
-                const code = compileFeatureToJS(src);
+                const code = compileFeatureToJS(config,src);
 
                 return {
                     code
