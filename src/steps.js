@@ -1,16 +1,16 @@
 import { ExpressionFactory, ParameterTypeRegistry } from '@cucumber/cucumber-expressions';
 import _ from 'lodash/fp.js';
+import { log } from './logger.js';
 
 var steps = [];
 
 const expressionFactory = new ExpressionFactory(new ParameterTypeRegistry());
 
 export const addStepDefinition = (expression,f) => {
+    log.debug('addStepDefinition expression: '+JSON.stringify(expression));
     const cucumberExpression = expressionFactory.createExpression(expression);
-    //console.log(cucumberExpression);
     steps = _.concat(steps,{ expression, f, cucumberExpression });
 }
-
 
 const findStepDefinitionMatches = (step) => {
     const matchesMapper = _.map((match) => match.getValue());
