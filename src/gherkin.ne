@@ -56,7 +56,7 @@ scenarioOutlineKeyword -> %scenarioOutline {% data => data[0].value %}
 examplesList -> null {% data => [] %}
   | examplesList examples {% data => fp.concat(data[0],data[1]) %}
 
-examples -> examplesStatement dataTable {% data => fp.assign(data[0],{ dataTable : data[1] }) %}
+examples -> examplesStatement dataTable emptyLines {% data => fp.assign(data[0],{ dataTable : data[1] }) %}
 examplesStatement -> _ examplesKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
 %}
@@ -102,3 +102,7 @@ freeform -> null {% data => '' %}
 
 _ -> null {% data => '' %}
   | %ws {% data => data[0].value %}
+
+emptyLines -> null
+  | emptyLines _ %newline
+

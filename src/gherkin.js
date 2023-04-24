@@ -102,7 +102,7 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
 	    {"name": "examplesList", "symbols": [], "postprocess": data => []},
 	    {"name": "examplesList", "symbols": ["examplesList", "examples"], "postprocess": data => fp.concat(data[0],data[1])},
-	    {"name": "examples", "symbols": ["examplesStatement", "dataTable"], "postprocess": data => fp.assign(data[0],{ dataTable : data[1] })},
+	    {"name": "examples", "symbols": ["examplesStatement", "dataTable", "emptyLines"], "postprocess": data => fp.assign(data[0],{ dataTable : data[1] })},
 	    {"name": "examplesStatement", "symbols": ["_", "examplesKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
 	        (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
 	        },
@@ -137,7 +137,9 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	        }
 	        },
 	    {"name": "_", "symbols": [], "postprocess": data => ''},
-	    {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0].value}
+	    {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0].value},
+	    {"name": "emptyLines", "symbols": []},
+	    {"name": "emptyLines", "symbols": ["emptyLines", "_", (lexer.has("newline") ? {type: "newline"} : newline)]}
 	]
 	  , ParserStart: "main"
 	};
