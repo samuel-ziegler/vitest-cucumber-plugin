@@ -69,7 +69,9 @@ var grammar = {
     {"name": "dataTableColumns", "symbols": [], "postprocess": data => []},
     {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => fp.concat(data[0],data[1].trim())},
     {"name": "steps", "symbols": [], "postprocess": data => []},
-    {"name": "steps", "symbols": ["steps", "step"], "postprocess": data => fp.concat(data[0],data[1])},
+    {"name": "steps", "symbols": ["steps", "step", "dataTable"], "postprocess": 
+        (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
+        },
     {"name": "steps", "symbols": ["steps", "_", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]},
     {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
     {"name": "stepKeyword", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": (data) => { return { type : 'given', name : data[0].value } }},
@@ -78,6 +80,10 @@ var grammar = {
     {"name": "text", "symbols": [], "postprocess": data => ''},
     {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
     {"name": "text", "symbols": ["text", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("given") ? {type: "given"} : given)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("when") ? {type: "when"} : when)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("then") ? {type: "then"} : then)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0]+data[1].value},
     {"name": "freeform", "symbols": [], "postprocess": data => ''},
     {"name": "freeform", "symbols": ["freeform", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
           log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));

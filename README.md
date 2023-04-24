@@ -111,7 +111,5 @@ This plugin is not yet feature complete.  Here is the list of features from Cucu
 * And, But and * keywords
 * Background keyword
 * Doc strings
-* Data Tables
 * Tags
 * Comments
-
