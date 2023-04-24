@@ -1,6 +1,6 @@
 {
     "name": "vitest-cucumber-plugin",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Plugin for Vitest which allows for tests to be written in Cucumber format.",
     "keywords": [
         "vite",
