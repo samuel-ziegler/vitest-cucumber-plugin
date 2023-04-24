@@ -109,5 +109,5 @@ work, but this configuration isn't tested.
 This plugin is not yet feature complete.  Here is the list of features from Cucumber which aren't yet implemented:
 * Rule keyword
 * Doc strings
-* Tags
 * Data Table escape characters
+* Boolean expression support for tags

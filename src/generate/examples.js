@@ -1,4 +1,4 @@
-import { escape } from './util.js';
+import { escape, shouldSkip } from './util.js';
 import { generateTests } from './tests.js';
 import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
@@ -29,7 +29,7 @@ const generateAllTests = (steps,parameters,parameterValues) => {
     return allTests.tests;
 }
 
-export const generateExamples = (steps,examplesStatement) => {
+export const generateExamples = (config,steps,examplesStatement) => {
     log.debug('generateExamples steps:'+JSON.stringify(steps)+' examples: '+JSON.stringify(examplesStatement));
 
     const parameters = _.head(examplesStatement.dataTable);
@@ -38,8 +38,10 @@ export const generateExamples = (steps,examplesStatement) => {
     log.debug('generateExamples parameters:'+JSON.stringify(parameters)+' parameterValues: '+
               JSON.stringify(parameterValues));
 
+    const skip = shouldSkip(config,examplesStatement.tags) ? '.skip' : '';
+
     const allTests = generateAllTests(steps,parameters,parameterValues);
-    const code = `    describe('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
+    const code = `    describe${skip}('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
     });`;
     return code;
 }
