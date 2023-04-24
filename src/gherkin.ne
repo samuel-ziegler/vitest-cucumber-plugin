@@ -31,33 +31,49 @@ const lexer = moo.compile({
 main -> feature {% id %}
 
 feature -> featureStatement freeform statements {%
-  (data) => { return { name : data[0].trim(), description : data[1].trim(), statements : data[2] } }
+  (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
 %}
-featureStatement -> _ %feature _ %colon text %newline {% data => data[4] %}
+featureStatement -> _ %feature _ %colon text %newline {%
+  (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
+%}
 
 statements -> null {% data => [] %}
   | statements example {% data => fp.concat(data[0],data[1]) %}
-  | statements scenarioOutline
+  | statements scenarioOutline {% data => fp.concat(data[0],data[1]) %}
 
-example -> exampleStatement steps {% (data) => { return { type : 'example', name : data[0].trim(), steps : data[1] } } %}
-exampleStatement -> _ exampleKeyword _ %colon text %newline {% data => data[4] %}
-exampleKeyword -> %example | %scenario
+example -> exampleStatement steps {% (data) => fp.assign(data[0],{ steps : data[1] }) %}
+exampleStatement -> _ exampleKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
+%}
+exampleKeyword -> %example {% data => data[0].value %}
+  | %scenario {% data => data[0].value %}
 
-scenarioOutline -> scenarioOutlineStatement steps examples 
-scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline
-scenarioOutlineKeyword -> %scenarioOutline | %scenarioTemplate
+scenarioOutline -> scenarioOutlineStatement steps examplesList {%
+  data => fp.assign(data[0],{ steps : data[1], examples : data[2] })
+%}
+scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
+%}
+scenarioOutlineKeyword -> %scenarioOutline {% data => data[0].value %}
+  | %scenarioTemplate {% data => data[0].value %}
 
-examples -> examplesStatement dataTable
-examplesStatement -> _ examplesKeyword _ %colon text %newline
-examplesKeyword -> %examples | %scenarios
+examplesList -> null {% data => [] %}
+  | examplesList examples {% data => fp.concat(data[0],data[1]) %}
 
-dataTable -> null 
-  | dataTable dataTableRow
+examples -> examplesStatement dataTable {% data => fp.assign(data[0],{ dataTable : data[1] }) %}
+examplesStatement -> _ examplesKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
+%}
+examplesKeyword -> %examples {% data => data[0].value %}
+  | %scenarios {% data => data[0].value %}
 
-dataTableRow -> _ %pipe dataTableColumns %newline
+dataTable -> null {% data => [] %}
+  | dataTable dataTableRow {% data => fp.concat(data[0],[data[1]]) %}
 
-dataTableColumns -> null 
-  | dataTableColumns text %pipe
+dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
+
+dataTableColumns -> null {% data => [] %}
+  | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
 
 steps -> null {% data => [] %}
   | steps step {% data => fp.concat(data[0],data[1]) %}

@@ -2,12 +2,8 @@ import { Given, When, Then } from 'vitest-cucumber-plugin';
 import _ from 'lodash/fp.js';
 import { expect } from 'vitest'
 
-Given('today is Sunday', function () {
-    return { today : 'Sunday' };
-});
-
-Given('today is Friday', function () {
-    return { today : 'Friday' };
+Given('today is {string}', function (state,[ today ]) {
+    return { today };
 });
 
 When('I ask whether it\'s Friday yet', function (state) {

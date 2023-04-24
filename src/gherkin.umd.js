@@ -33,29 +33,41 @@ var grammar = {
     ParserRules: [
     {"name": "main", "symbols": ["feature"], "postprocess": id},
     {"name": "feature", "symbols": ["featureStatement", "freeform", "statements"], "postprocess": 
-        (data) => { return { name : data[0].trim(), description : data[1].trim(), statements : data[2] } }
+        (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
         },
-    {"name": "featureStatement", "symbols": ["_", (lexer.has("feature") ? {type: "feature"} : feature), "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[4]},
+    {"name": "featureStatement", "symbols": ["_", (lexer.has("feature") ? {type: "feature"} : feature), "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+        (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
+        },
     {"name": "statements", "symbols": [], "postprocess": data => []},
     {"name": "statements", "symbols": ["statements", "example"], "postprocess": data => fp.concat(data[0],data[1])},
-    {"name": "statements", "symbols": ["statements", "scenarioOutline"]},
-    {"name": "example", "symbols": ["exampleStatement", "steps"], "postprocess": (data) => { return { type : 'example', name : data[0].trim(), steps : data[1] } }},
-    {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[4]},
-    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)]},
-    {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)]},
-    {"name": "scenarioOutline", "symbols": ["scenarioOutlineStatement", "steps", "examples"]},
-    {"name": "scenarioOutlineStatement", "symbols": ["_", "scenarioOutlineKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)]},
-    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)]},
-    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioTemplate") ? {type: "scenarioTemplate"} : scenarioTemplate)]},
-    {"name": "examples", "symbols": ["examplesStatement", "dataTable"]},
-    {"name": "examplesStatement", "symbols": ["_", "examplesKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)]},
-    {"name": "examplesKeyword", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)]},
-    {"name": "examplesKeyword", "symbols": [(lexer.has("scenarios") ? {type: "scenarios"} : scenarios)]},
-    {"name": "dataTable", "symbols": []},
-    {"name": "dataTable", "symbols": ["dataTable", "dataTableRow"]},
-    {"name": "dataTableRow", "symbols": ["_", (lexer.has("pipe") ? {type: "pipe"} : pipe), "dataTableColumns", (lexer.has("newline") ? {type: "newline"} : newline)]},
-    {"name": "dataTableColumns", "symbols": []},
-    {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)]},
+    {"name": "statements", "symbols": ["statements", "scenarioOutline"], "postprocess": data => fp.concat(data[0],data[1])},
+    {"name": "example", "symbols": ["exampleStatement", "steps"], "postprocess": (data) => fp.assign(data[0],{ steps : data[1] })},
+    {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+        (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
+        },
+    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+    {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
+    {"name": "scenarioOutline", "symbols": ["scenarioOutlineStatement", "steps", "examplesList"], "postprocess": 
+        data => fp.assign(data[0],{ steps : data[1], examples : data[2] })
+        },
+    {"name": "scenarioOutlineStatement", "symbols": ["_", "scenarioOutlineKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+        (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
+        },
+    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
+    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioTemplate") ? {type: "scenarioTemplate"} : scenarioTemplate)], "postprocess": data => data[0].value},
+    {"name": "examplesList", "symbols": [], "postprocess": data => []},
+    {"name": "examplesList", "symbols": ["examplesList", "examples"], "postprocess": data => fp.concat(data[0],data[1])},
+    {"name": "examples", "symbols": ["examplesStatement", "dataTable"], "postprocess": data => fp.assign(data[0],{ dataTable : data[1] })},
+    {"name": "examplesStatement", "symbols": ["_", "examplesKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+        (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
+        },
+    {"name": "examplesKeyword", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},
+    {"name": "examplesKeyword", "symbols": [(lexer.has("scenarios") ? {type: "scenarios"} : scenarios)], "postprocess": data => data[0].value},
+    {"name": "dataTable", "symbols": [], "postprocess": data => []},
+    {"name": "dataTable", "symbols": ["dataTable", "dataTableRow"], "postprocess": data => fp.concat(data[0],[data[1]])},
+    {"name": "dataTableRow", "symbols": ["_", (lexer.has("pipe") ? {type: "pipe"} : pipe), "dataTableColumns", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[2]},
+    {"name": "dataTableColumns", "symbols": [], "postprocess": data => []},
+    {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => fp.concat(data[0],data[1].trim())},
     {"name": "steps", "symbols": [], "postprocess": data => []},
     {"name": "steps", "symbols": ["steps", "step"], "postprocess": data => fp.concat(data[0],data[1])},
     {"name": "steps", "symbols": ["steps", "_", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]},

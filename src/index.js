@@ -9,14 +9,24 @@ const featureRegex = /\.feature$/;
 
 const escape = (str) => str.replace(/'/g,"\\'");
 
-const generateTests = (steps) => {
-    let tests = '';
+const parameterizeText = (text,parameterMap) => {
+    return _.reduce((text,parameter) => {
+        return text.replaceAll('<'+parameter+'>',parameterMap[parameter]);
+    },text)(_.keys(parameterMap));
+};
+
+const generateTests = (steps,parameterMap,extraIndent) => {
+    const indent = extraIndent ? extraIndent : '';
+    let tests = `
+${indent}    var state = {};`;
     
     _.forEach((step) => {
-        const name = step.text;
-        const stepString = JSON.stringify(step);
+        const parameterizedText = ( parameterMap ? parameterizeText(step.text,parameterMap) : step.text);
+        const name = parameterizedText;
+
+        const stepString = JSON.stringify({ type : step.type, text : parameterizedText });
         tests = tests+`
-    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
+${indent}    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
     },steps);
 
     return tests;
@@ -27,10 +37,52 @@ const generateExample = (example) => {
 
     tests += generateTests(example.steps);
     
-    const code = `  describe('${escape(example.name)}', () => {
-    var state = {};${tests}
+    const code = `  describe('${escape(example.type.name)}: ${escape(example.name)}', () => {${tests}
   });
 `;
+    return code;
+}
+
+const generateExamples = (steps,examplesStatement) => {
+    log.debug('generateExamples steps:'+JSON.stringify(steps)+' examples: '+JSON.stringify(examplesStatement));
+
+    const parameters = _.head(examplesStatement.dataTable);
+    const parameterValues = _.tail(examplesStatement.dataTable);
+
+    log.debug('generateExamples parameters:'+JSON.stringify(parameters)+' parameterValues: '+
+              JSON.stringify(parameterValues));
+
+    const allTests = _.reduce((allTests,values) => {
+        const parameterMap = _.reduce((parameterMap,value) => {
+            return {
+                map : _.set(parameters[parameterMap.index],value,parameterMap.map),
+                index : parameterMap.index + 1
+            };
+        },{ map : {}, index : 0 })(values);
+        
+        log.debug('parameterMap : '+JSON.stringify(parameterMap.map));
+
+        const tests = generateTests(steps,parameterMap.map,'    ');
+        
+        return { tests : allTests.tests + `
+      describe('${allTests.index}',() => {${tests}
+      });`, index : allTests.index + 1 };
+    },{ tests : '', index : 0})(parameterValues);
+    
+    const code = `    describe('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests.tests}
+    });`;
+    return code;
+}
+
+const generateScenarioOutline = (scenarioOutline) => {
+    const examplesStatements = _.reduce((examplesStatements,examplesStatement) => {
+        return examplesStatements + generateExamples(scenarioOutline.steps,examplesStatement);
+    },'')(scenarioOutline.examples);
+    const code = `  describe('${escape(scenarioOutline.type.name)}: ${escape(scenarioOutline.name)}', () => {
+${examplesStatements}
+  });
+`;
+
     return code;
 }
 
@@ -53,15 +105,21 @@ const compileFeatureToJS = (featureSrc) => {
     const name = feature.name;
     const statements = feature.statements;
 
-    const examples = _.reduce((examples,example) => { return examples+generateExample(example) },'')(statements);
+    const testStatements = _.reduce((testStatements,statement) => {
+        if (statement.type.type === 'example') {
+            return testStatements + generateExample(statement);
+        } else if (statement.type.type === 'scenarioOutline') {
+            return testStatements + generateScenarioOutline(statement);
+        }
+    },'')(statements);
 
     const code = `import { expect, test, describe } from 'vitest';
 import { Test, importStepDefinitions } from 'vitest-cucumber-plugin';
 
 await importStepDefinitions();
 
-describe('${escape(name)}', () => {
-${examples}});
+describe('${escape(feature.type.name)}: ${escape(name)}', () => {
+${testStatements}});
 `;
     log.debug(code);
 
@@ -82,6 +140,7 @@ export const When = addStepDefinition;
 export const Then = addStepDefinition;
 
 export const Test = (state,step) => {
+    log.debug('Test state:'+JSON.stringify(state)+' step: '+JSON.stringify(step));
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
     return stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters);
