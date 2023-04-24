@@ -76,7 +76,9 @@ dataTableColumns -> null {% data => [] %}
   | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
 
 steps -> null {% data => [] %}
-  | steps step {% data => fp.concat(data[0],data[1]) %}
+  | steps step dataTable {%
+  (data) => { const step = fp.set('dataTable',data[2],data[1]); return fp.concat(data[0],step) }
+%}
   | steps _ %newline {% data => data[0] %}
 
 step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
@@ -88,6 +90,10 @@ stepKeyword -> %given {% (data) => { return { type : 'given', name : data[0].val
 text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}
   | text %ws {% data => data[0]+data[1].value %}
+  | text %given {% data => data[0]+data[1].value %}
+  | text %when {% data => data[0]+data[1].value %}
+  | text %then {% data => data[0]+data[1].value %}
+  | text %colon {% data => data[0]+data[1].value %}
 
 freeform -> null {% data => '' %}
   | freeform text %newline {% (data) => {

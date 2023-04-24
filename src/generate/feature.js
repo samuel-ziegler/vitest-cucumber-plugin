@@ -1,6 +1,7 @@
 import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
 import { generateExample, generateScenarioOutline } from './index.js';
+import { escape } from './util.js';
 
 export const generateFeature = (feature) => {
     const name = feature.name;

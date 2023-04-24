@@ -32,11 +32,21 @@ export const When = addStepDefinition;
 export const Then = addStepDefinition;
 
 export const Test = (state,step) => {
-    log.debug('Test state:'+JSON.stringify(state)+' step: '+JSON.stringify(step));
+    log.debug('Test step: '+JSON.stringify(step)+' state:'+JSON.stringify(state));
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
-    return stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters);
+    const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,step.dataTable);
+    log.debug('Test newState: '+JSON.stringify(newState));
+
+    return newState;
 };
+
+export const DataTable = (dataTable) => {
+    const parameters = _.first(dataTable);
+    const rows = _.tail(dataTable);
+
+    return _.map((row) => _.zipObject(parameters,row))(rows);
+}
 
 export default function vitestCucumberPlugin() {
     return {
