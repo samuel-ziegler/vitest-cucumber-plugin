@@ -4,24 +4,12 @@ import { readdir } from 'node:fs/promises';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
 import { parameterizeText } from './parameterize.js';
-import { generateTests, generateExample, generateExamples } from './generate/index.js';
+import { generateTests, generateExample, generateExamples, generateScenarioOutline } from './generate/index.js';
 import { log } from './logger.js';
 
 const featureRegex = /\.feature$/;
 
 const escape = (str) => str.replace(/'/g,"\\'");
-
-const generateScenarioOutline = (scenarioOutline) => {
-    const examplesStatements = _.reduce((examplesStatements,examplesStatement) => {
-        return examplesStatements + generateExamples(scenarioOutline.steps,examplesStatement);
-    },'')(scenarioOutline.examples);
-    const code = `  describe('${escape(scenarioOutline.type.name)}: ${escape(scenarioOutline.name)}', () => {
-${examplesStatements}
-  });
-`;
-
-    return code;
-}
 
 const compileFeatureToJS = (featureSrc) => {
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
