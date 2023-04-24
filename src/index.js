@@ -9,14 +9,15 @@ const featureRegex = /\.feature$/;
 
 const escape = (str) => str.replace(/'/g,"\\'");
 
-const generateTests = (statements) => {
+const generateTests = (steps) => {
     let tests = '';
     
-    _.forEach((statement) => {
-        const name = statement.text;
+    _.forEach((step) => {
+        const name = step.text;
+        const stepString = JSON.stringify(step);
         tests = tests+`
-    test('${escape(name)}', () => { state = Test(state,'${escape(name)}'); });`;
-    },statements);
+    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
+    },steps);
 
     return tests;
 };
@@ -24,9 +25,7 @@ const generateTests = (statements) => {
 const generateExample = (example) => {
     var tests = '';
 
-    tests += generateTests(example.steps.given);
-    tests += generateTests(example.steps.when);
-    tests += generateTests(example.steps.then);
+    tests += generateTests(example.steps);
     
     const code = `  describe('${escape(example.name)}', () => {
     var state = {};${tests}

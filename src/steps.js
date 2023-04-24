@@ -15,7 +15,7 @@ export const addStepDefinition = (expression,f) => {
 const findStepDefinitionMatches = (step) => {
     const matchesMapper = _.map((match) => match.getValue());
     const reducer = _.reduce((accumulator,stepDefinition) => {
-        const matches = stepDefinition.cucumberExpression.match(step);
+        const matches = stepDefinition.cucumberExpression.match(step.text);
         if (matches) {
             //console.log(accumulator,stepDefinition,matches);
             return _.concat(accumulator,{ stepDefinition, parameters : matchesMapper(matches) });

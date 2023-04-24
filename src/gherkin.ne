@@ -28,7 +28,7 @@ const lexer = moo.compile({
 
 @lexer lexer
 
-main -> feature
+main -> feature {% id %}
 
 feature -> featureStatement freeform statements {%
   (data) => { return { name : data[0].trim(), description : data[1].trim(), statements : data[2] } }
@@ -39,7 +39,7 @@ statements -> null {% data => [] %}
   | statements example {% data => fp.concat(data[0],data[1]) %}
   | statements scenarioOutline
 
-example -> exampleStatement steps {% (data) => { return { type : 'example', name : data[0], steps : data[1] } } %}
+example -> exampleStatement steps {% (data) => { return { type : 'example', name : data[0].trim(), steps : data[1] } } %}
 exampleStatement -> _ exampleKeyword _ %colon text %newline {% data => data[4] %}
 exampleKeyword -> %example | %scenario
 
@@ -61,12 +61,13 @@ dataTableColumns -> null
 
 steps -> null {% data => [] %}
   | steps step {% data => fp.concat(data[0],data[1]) %}
+  | steps _ %newline {% data => data[0] %}
 
-step -> _ stepKeyword text %newline {% data => { return { type : data[1], step : data[2] } } %}
+step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
 
-stepKeyword -> %given {% data => 'given' %}
-  | %when {% data => 'when' %}
-  | %then {% data => 'then' %}
+stepKeyword -> %given {% (data) => { return { type : 'given', name : data[0].value } } %}
+  | %when {% (data) => { return { type : 'when', name : data[0].value } } %}
+  | %then {% (data) => { return { type : 'then', name : data[0].value } } %}
 
 text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}

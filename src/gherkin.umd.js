@@ -31,7 +31,7 @@ const lexer = moo.compile({
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "main", "symbols": ["feature"]},
+    {"name": "main", "symbols": ["feature"], "postprocess": id},
     {"name": "feature", "symbols": ["featureStatement", "freeform", "statements"], "postprocess": 
         (data) => { return { name : data[0].trim(), description : data[1].trim(), statements : data[2] } }
         },
@@ -39,7 +39,7 @@ var grammar = {
     {"name": "statements", "symbols": [], "postprocess": data => []},
     {"name": "statements", "symbols": ["statements", "example"], "postprocess": data => fp.concat(data[0],data[1])},
     {"name": "statements", "symbols": ["statements", "scenarioOutline"]},
-    {"name": "example", "symbols": ["exampleStatement", "steps"], "postprocess": (data) => { return { type : 'example', name : data[0], steps : data[1] } }},
+    {"name": "example", "symbols": ["exampleStatement", "steps"], "postprocess": (data) => { return { type : 'example', name : data[0].trim(), steps : data[1] } }},
     {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[4]},
     {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)]},
     {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)]},
@@ -58,10 +58,11 @@ var grammar = {
     {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)]},
     {"name": "steps", "symbols": [], "postprocess": data => []},
     {"name": "steps", "symbols": ["steps", "step"], "postprocess": data => fp.concat(data[0],data[1])},
-    {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], step : data[2] } }},
-    {"name": "stepKeyword", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": data => 'given'},
-    {"name": "stepKeyword", "symbols": [(lexer.has("when") ? {type: "when"} : when)], "postprocess": data => 'when'},
-    {"name": "stepKeyword", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": data => 'then'},
+    {"name": "steps", "symbols": ["steps", "_", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]},
+    {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
+    {"name": "stepKeyword", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": (data) => { return { type : 'given', name : data[0].value } }},
+    {"name": "stepKeyword", "symbols": [(lexer.has("when") ? {type: "when"} : when)], "postprocess": (data) => { return { type : 'when', name : data[0].value } }},
+    {"name": "stepKeyword", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": (data) => { return { type : 'then', name : data[0].value } }},
     {"name": "text", "symbols": [], "postprocess": data => ''},
     {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
     {"name": "text", "symbols": ["text", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
