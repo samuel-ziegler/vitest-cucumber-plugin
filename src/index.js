@@ -3,34 +3,13 @@ import gherkin from './gherkin.js';
 import { readdir } from 'node:fs/promises';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
+import { parameterizeText } from './parameterize.js';
+import { generateTests } from './generate/index.js';
 import { log } from './logger.js';
 
 const featureRegex = /\.feature$/;
 
 const escape = (str) => str.replace(/'/g,"\\'");
-
-const parameterizeText = (text,parameterMap) => {
-    return _.reduce((text,parameter) => {
-        return text.replaceAll('<'+parameter+'>',parameterMap[parameter]);
-    },text)(_.keys(parameterMap));
-};
-
-const generateTests = (steps,parameterMap,extraIndent) => {
-    const indent = extraIndent ? extraIndent : '';
-    let tests = `
-${indent}    var state = {};`;
-    
-    _.forEach((step) => {
-        const parameterizedText = ( parameterMap ? parameterizeText(step.text,parameterMap) : step.text);
-        const name = parameterizedText;
-
-        const stepString = JSON.stringify({ type : step.type, text : parameterizedText });
-        tests = tests+`
-${indent}    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
-    },steps);
-
-    return tests;
-};
 
 const generateExample = (example) => {
     var tests = '';
