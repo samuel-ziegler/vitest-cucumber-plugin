@@ -84,6 +84,8 @@ var grammar = {
     {"name": "text", "symbols": ["text", (lexer.has("when") ? {type: "when"} : when)], "postprocess": data => data[0]+data[1].value},
     {"name": "text", "symbols": ["text", (lexer.has("then") ? {type: "then"} : then)], "postprocess": data => data[0]+data[1].value},
     {"name": "text", "symbols": ["text", (lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0]+data[1].value},
+    {"name": "text", "symbols": ["text", (lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0]+data[1].value},
     {"name": "freeform", "symbols": [], "postprocess": data => ''},
     {"name": "freeform", "symbols": ["freeform", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
           log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));

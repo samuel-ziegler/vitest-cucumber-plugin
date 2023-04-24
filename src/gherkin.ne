@@ -94,6 +94,8 @@ text -> null {% data => '' %}
   | text %when {% data => data[0]+data[1].value %}
   | text %then {% data => data[0]+data[1].value %}
   | text %colon {% data => data[0]+data[1].value %}
+  | text %scenario {% data => data[0]+data[1].value %}
+  | text %example {% data => data[0]+data[1].value %}
 
 freeform -> null {% data => '' %}
   | freeform text %newline {% (data) => {
