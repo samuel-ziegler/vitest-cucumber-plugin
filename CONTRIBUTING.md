@@ -28,6 +28,12 @@ $ npm run nearley
 In addition to running nearley, this script also runs rollup in order to convert the generated parser into an 
 ECMAScript module.
 
+## Branching
+
+This repo uses [git flow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) as it's 
+branching model.  The 'main' branch the release branch and is only pushed to during the release process.  The
+'develop' branch is the cutting edge branch which is pushed to whenever a feature branch is finished.
+
 ## Doing a release
 
 1. git flow release start <version>

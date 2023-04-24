@@ -110,8 +110,6 @@ This plugin is not yet feature complete.  Here is the list of features from Cucu
 * Rule keyword
 * And, But and * keywords
 * Background keyword
-* Scenario Outline/Scenario Template keyword
-* Examples/Scenarios keyword
 * Doc strings
 * Data Tables
 * Tags

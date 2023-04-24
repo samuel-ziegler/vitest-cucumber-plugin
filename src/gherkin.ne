@@ -1,17 +1,28 @@
 @{%
 const fp = require('lodash/fp.js');
 const moo = require('moo');
+const log = require('./logger.js').log;
 const lexer = moo.compile({
-  ws : /[ \t]+/,
-  feature : 'Feature:',
-  scenarioOutline : 'Scenario Outline:',
-  given : 'Given',
-  when : 'When',
-  then : 'Then',
-  example : 'Example:',
-  scenario : 'Scenario:',
-  text : /[^\n]+/,
   newline : { match : '\n', lineBreaks : true },
+  ws : /[ \t]+/,
+  colon : ':',
+  pipe : '|',
+  backSlash : '\\',
+  scenarioOutline : 'Scenario Outline',
+  scenarioTemplate : 'Scenario Template',
+  word : {
+    match : /[^ \t\n:|\\]+/,
+    type : moo.keywords({
+      feature : 'Feature',
+      examples : 'Examples',
+      scenarios : 'Scenarios',
+      given : 'Given',
+      when : 'When',
+      then : 'Then',
+      example : 'Example',
+      scenario : 'Scenario',
+    }),
+  },
 });
 %}
 
@@ -19,32 +30,71 @@ const lexer = moo.compile({
 
 main -> feature {% id %}
 
-feature -> %feature text %newline freeform %newline statements {%
-  (data) => { return { name : data[1], description : data[3], statements : data[5] } }
+feature -> featureStatement freeform statements {%
+  (data) => fp.assign(data[0],{ description : data[1].trim(), statements : data[2] })
+%}
+featureStatement -> _ %feature _ %colon text %newline {%
+  (data) => { return { type : { type : 'feature', name : data[1].value.trim() }, name : data[4].trim() } }
 %}
 
 statements -> null {% data => [] %}
-  | statements _ exampleKeyword text %newline steps {%
-  (data) => { return fp.concat(data[0],{ type : data[2], name : data[3], steps : data[5] }) }
+  | statements example {% data => fp.concat(data[0],data[1]) %}
+  | statements scenarioOutline {% data => fp.concat(data[0],data[1]) %}
+
+example -> exampleStatement steps {% (data) => fp.assign(data[0],{ steps : data[1] }) %}
+exampleStatement -> _ exampleKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 %}
-  | statements _ %newline {% id %}
+exampleKeyword -> %example {% data => data[0].value %}
+  | %scenario {% data => data[0].value %}
 
-exampleKeyword -> %example | %scenario {% data => data[0].type %}
+scenarioOutline -> scenarioOutlineStatement steps examplesList {%
+  data => fp.assign(data[0],{ steps : data[1], examples : data[2] })
+%}
+scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
+%}
+scenarioOutlineKeyword -> %scenarioOutline {% data => data[0].value %}
+  | %scenarioTemplate {% data => data[0].value %}
 
-steps -> given when then {% (data) => { return { given : data[0], when : data[1], then : data[2] } } %}
+examplesList -> null {% data => [] %}
+  | examplesList examples {% data => fp.concat(data[0],data[1]) %}
 
-given -> null {% data => [] %}
-  | given _ %given text %newline {% data => fp.concat(data[0],{ text : data[3] }) %}
+examples -> examplesStatement dataTable {% data => fp.assign(data[0],{ dataTable : data[1] }) %}
+examplesStatement -> _ examplesKeyword _ %colon text %newline {%
+  (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
+%}
+examplesKeyword -> %examples {% data => data[0].value %}
+  | %scenarios {% data => data[0].value %}
 
-when -> null {% data => [] %}
-  | when _ %when text %newline {% data => fp.concat(data[0],{ text : data[3] }) %}
+dataTable -> null {% data => [] %}
+  | dataTable dataTableRow {% data => fp.concat(data[0],[data[1]]) %}
 
-then -> null {% data => [] %}
-  | then _ %then text %newline {% data => fp.concat(data[0],{ text : data[3] }) %}
+dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
 
-text -> _ %text {% data => data[1].value %}
+dataTableColumns -> null {% data => [] %}
+  | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
 
-freeform -> null {% data => "" %}
-  | freeform text %newline {% data => data[0] + data[1] + data[2] %}
+steps -> null {% data => [] %}
+  | steps step {% data => fp.concat(data[0],data[1]) %}
+  | steps _ %newline {% data => data[0] %}
 
-_ -> null | %ws {% data => null %}
+step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
+
+stepKeyword -> %given {% (data) => { return { type : 'given', name : data[0].value } } %}
+  | %when {% (data) => { return { type : 'when', name : data[0].value } } %}
+  | %then {% (data) => { return { type : 'then', name : data[0].value } } %}
+
+text -> null {% data => '' %}
+  | text %word {% data => data[0]+data[1].value %}
+  | text %ws {% data => data[0]+data[1].value %}
+
+freeform -> null {% data => '' %}
+  | freeform text %newline {% (data) => {
+  log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
+  return data[0]+data[1]+'\n'
+}
+%}
+
+_ -> null {% data => '' %}
+  | %ws {% data => data[0].value %}

@@ -15,7 +15,7 @@ export const addStepDefinition = (expression,f) => {
 const findStepDefinitionMatches = (step) => {
     const matchesMapper = _.map((match) => match.getValue());
     const reducer = _.reduce((accumulator,stepDefinition) => {
-        const matches = stepDefinition.cucumberExpression.match(step);
+        const matches = stepDefinition.cucumberExpression.match(step.text);
         if (matches) {
             //console.log(accumulator,stepDefinition,matches);
             return _.concat(accumulator,{ stepDefinition, parameters : matchesMapper(matches) });
@@ -31,11 +31,11 @@ export const findStepDefinitionMatch = (step) => {
     const stepDefinitionMatches = findStepDefinitionMatches(step);
     
     if (!stepDefinitionMatches || (stepDefinitionMatches.length == 0)) {
-        throw new Error('Step not defined: \''+step+'\'');
+        throw new Error('Step not defined: \''+step.type.name+' '+step.text+'\'');
     }
 
     if (stepDefinitionMatches.length > 1) {
-        throw new Error('More than one step which matches: \''+step+'\'');
+        throw new Error('More than one step which matches: \''+step.type.name+' '+step.text+'\'');
     }
 
     return stepDefinitionMatches[0];
