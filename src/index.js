@@ -4,23 +4,13 @@ import { readdir } from 'node:fs/promises';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
 import { parameterizeText } from './parameterize.js';
-import { generateTests } from './generate/index.js';
+import { generateTests, generateExample } from './generate/index.js';
 import { log } from './logger.js';
 
 const featureRegex = /\.feature$/;
 
 const escape = (str) => str.replace(/'/g,"\\'");
 
-const generateExample = (example) => {
-    var tests = '';
-
-    tests += generateTests(example.steps);
-    
-    const code = `  describe('${escape(example.type.name)}: ${escape(example.name)}', () => {${tests}
-  });
-`;
-    return code;
-}
 
 const generateExamples = (steps,examplesStatement) => {
     log.debug('generateExamples steps:'+JSON.stringify(steps)+' examples: '+JSON.stringify(examplesStatement));
