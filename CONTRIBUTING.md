@@ -40,3 +40,4 @@ branching model.  The 'main' branch the release branch and is only pushed to dur
 1. Update version number in package.json
 1. Add the release notes to [RELEASE_NOTES.md](RELEASE_NOTES.md).
 1. git flow release finish <version>
+1. npm publish
