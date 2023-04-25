@@ -22,7 +22,17 @@ export const generateFeature = (config,feature) => {
     const configStr = JSON.stringify(config);
 
     const code = `import { expect, test, describe } from 'vitest';
-import { Test, importStepDefinitions } from 'vitest-cucumber-plugin';
+import { Test } from 'vitest-cucumber-plugin';
+import { readdir } from 'node:fs/promises';
+
+const importStepDefinitions = async (config) => {
+    const stepDefinitionDirectory = config.root+'/features/step_definitions';
+    const files = await readdir(stepDefinitionDirectory);
+    for (const file of files) {
+        const stepDefinition = stepDefinitionDirectory+'/'+file;
+        await import(stepDefinition);
+    }
+};
 
 await importStepDefinitions(${configStr});
 
