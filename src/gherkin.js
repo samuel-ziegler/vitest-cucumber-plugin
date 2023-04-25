@@ -40,9 +40,12 @@ const log = pino();
 
 log.level = 'warn';
 
+const setLogLevel = (logLevel) => { log.level = logLevel; };
+
 var logger = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	log: log
+	log: log,
+	setLogLevel: setLogLevel
 });
 
 var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
@@ -63,10 +66,12 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	  colon : ':',
 	  step : '*',
 	  pipe : '|',
-	  backSlash : '\\',
+	  escapedPipe : '\\|',
+	  escapedNewline : '\\n',
+	  escapedBackSlash : '\\\\',
 	  scenarioOutline : ['Scenario Outline','Scenario Template'],
 	  word : {
-	    match : /[^ \t\n:|\\]+/,
+	    match : /[^ \t\n\:\|\@\*]+/,
 	    type : moo.keywords({
 	      feature : 'Feature',
 	      examples : ['Examples','Scenarios'],
@@ -127,7 +132,15 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "dataTable", "symbols": ["dataTable", "dataTableRow"], "postprocess": data => fp.concat(data[0],[data[1]])},
 	    {"name": "dataTableRow", "symbols": ["_", (lexer.has("pipe") ? {type: "pipe"} : pipe), "dataTableColumns", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[2]},
 	    {"name": "dataTableColumns", "symbols": [], "postprocess": data => []},
-	    {"name": "dataTableColumns", "symbols": ["dataTableColumns", "text", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => fp.concat(data[0],data[1].trim())},
+	    {"name": "dataTableColumns", "symbols": ["dataTableColumns", "dataTableColumnText", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => fp.concat(data[0],data[1].trim())},
+	    {"name": "dataTableColumnText", "symbols": [], "postprocess": data => ''},
+	    {"name": "dataTableColumnText", "symbols": ["dataTableColumnText", "escapedColumnCharaters"], "postprocess": data => data[0]+data[1]},
+	    {"name": "dataTableColumnText", "symbols": ["dataTableColumnText", "keywords"], "postprocess": data => data[0]+data[1]},
+	    {"name": "dataTableColumnText", "symbols": ["dataTableColumnText", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "dataTableColumnText", "symbols": ["dataTableColumnText", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedPipe") ? {type: "escapedPipe"} : escapedPipe)], "postprocess": data => '|'},
+	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedBackSlash") ? {type: "escapedBackSlash"} : escapedBackSlash)], "postprocess": data => '\\'},
+	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedNewline") ? {type: "escapedNewline"} : escapedNewline)], "postprocess": data => '\n'},
 	    {"name": "steps", "symbols": ["stepAndTable", "moreSteps"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "moreSteps", "symbols": [], "postprocess": data => []},
 	    {"name": "moreSteps", "symbols": ["moreSteps", "stepAndTable"], "postprocess": data => fp.concat(data[0],data[1])},
@@ -138,12 +151,17 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "text", "symbols": [], "postprocess": data => ''},
 	    {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("step") ? {type: "step"} : step)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "text", "symbols": ["text", (lexer.has("background") ? {type: "background"} : background)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "text", "symbols": ["text", "keywords"], "postprocess": data => data[0]+data[1]},
+	    {"name": "text", "symbols": ["text", (lexer.has("pipe") ? {type: "pipe"} : pipe)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "text", "symbols": ["text", (lexer.has("escapedPipe") ? {type: "escapedPipe"} : escapedPipe)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "text", "symbols": ["text", (lexer.has("escapedNewline") ? {type: "escapedNewline"} : escapedNewline)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "text", "symbols": ["text", (lexer.has("escapedBackSlash") ? {type: "escapedBackSlash"} : escapedBackSlash)], "postprocess": data => data[0]+data[1].value},
+	    {"name": "keywords", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("background") ? {type: "background"} : background)], "postprocess": data => data[0].value},
 	    {"name": "bolText", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws), (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[1].value},
 	    {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
 	    {"name": "freeform", "symbols": [], "postprocess": data => ''},

@@ -10,10 +10,12 @@ const lexer = moo.compile({
   colon : ':',
   step : '*',
   pipe : '|',
-  backSlash : '\\',
+  escapedPipe : '\\|',
+  escapedNewline : '\\n',
+  escapedBackSlash : '\\\\',
   scenarioOutline : ['Scenario Outline','Scenario Template'],
   word : {
-    match : /[^ \t\n:|\\]+/,
+    match : /[^ \t\n\:\|\@\*]+/,
     type : moo.keywords({
       feature : 'Feature',
       examples : ['Examples','Scenarios'],
@@ -90,7 +92,17 @@ dataTable -> null {% data => [] %}
 dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
 
 dataTableColumns -> null {% data => [] %}
-  | dataTableColumns text %pipe {% data => fp.concat(data[0],data[1].trim()) %}
+  | dataTableColumns dataTableColumnText %pipe {% data => fp.concat(data[0],data[1].trim()) %}
+
+dataTableColumnText -> null {% data => '' %}
+  | dataTableColumnText escapedColumnCharaters {% data => data[0]+data[1] %}
+  | dataTableColumnText keywords {% data => data[0]+data[1] %}
+  | dataTableColumnText %word {% data => data[0]+data[1].value %}
+  | dataTableColumnText %ws {% data => data[0]+data[1].value %}
+
+escapedColumnCharaters -> %escapedPipe {% data => '|' %}
+  | %escapedBackSlash {% data => '\\' %}
+  | %escapedNewline {% data => '\n' %}
 
 steps -> stepAndTable moreSteps {% data => fp.concat(data[0],data[1]) %}
 
@@ -106,12 +118,18 @@ stepKeyword -> %step {% (data) => { return { type : 'step', name : data[0].value
 text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}
   | text %ws {% data => data[0]+data[1].value %}
-  | text %step {% data => data[0]+data[1].value %}
-  | text %colon {% data => data[0]+data[1].value %}
-  | text %example {% data => data[0]+data[1].value %}
-  | text %examples {% data => data[0]+data[1].value %}
-  | text %scenarioOutline {% data => data[0]+data[1].value %}
-  | text %background {% data => data[0]+data[1].value %}
+  | text keywords {% data => data[0]+data[1] %}
+  | text %pipe {% data => data[0]+data[1].value %}
+  | text %escapedPipe {% data => data[0]+data[1].value %}
+  | text %escapedNewline {% data => data[0]+data[1].value %}
+  | text %escapedBackSlash {% data => data[0]+data[1].value %}
+
+keywords -> %step {% data => data[0].value %}
+  | %colon {% data => data[0].value %}
+  | %example {% data => data[0].value %}
+  | %examples {% data => data[0].value %}
+  | %scenarioOutline {% data => data[0].value %}
+  | %background {% data => data[0].value %}
 
 bolText -> %ws %word {% data => data[1].value %}
   | %word {% data => data[0].value %}
