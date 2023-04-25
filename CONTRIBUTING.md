@@ -41,8 +41,8 @@ branching model.  The 'main' branch the release branch and is only pushed to dur
 1. ```$ npm pkg set version=$VERSION```
 1. ```$ sed -i "1s/^/* v$VERSION : \!\!\! ADD RELEASE NOTE HERE \!\!\!\n/" RELEASE_NOTES.md```
 1. ```$ emacs -nw RELEASE_NOTES.md```
-1. ```$ git add . ; git commit -m v$VERSION```
 2. ```$ npm test```
+1. ```$ git add . ; git commit -m v$VERSION```
 3. ```$ git flow release finish v$VERSION```
 4. ```$ git push```
 5. ```$ git checkout main```
