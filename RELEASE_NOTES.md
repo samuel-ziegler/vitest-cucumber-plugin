@@ -1,3 +1,4 @@
+* v0.1.4 : Changed README to point to RPM registry
 * v0.1.3 : Import modules from generated code to make sure they are processed correctly
 * v0.1.2 : Set default log level to warn and make it configurable
 * v0.1.1 : Use root dir from the config to find step_definitions dir
