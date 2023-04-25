@@ -99,7 +99,6 @@ var grammar = {
     {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
     {"name": "freeform", "symbols": [], "postprocess": data => ''},
     {"name": "freeform", "symbols": ["freeform", "bolText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
-          log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
           return data[0]+data[1]+data[2]+'\n'
         }
         },

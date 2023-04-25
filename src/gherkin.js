@@ -38,7 +38,7 @@ var gherkin_umd$1 = {exports: {}};
 
 const log = pino();
 
-log.level = 'trace';
+log.level = 'warn';
 
 var logger = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -54,7 +54,7 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 
 	const fp = require$$0;
 	const moo = require$$1;
-	const log = require$$2.log;
+	require$$2.log;
 	const lexer = moo.compile({
 	  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
 	  newline : { match : '\n', lineBreaks : true },
@@ -148,7 +148,6 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 	    {"name": "bolText", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
 	    {"name": "freeform", "symbols": [], "postprocess": data => ''},
 	    {"name": "freeform", "symbols": ["freeform", "bolText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess":  (data) => {
-	          log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
 	          return data[0]+data[1]+data[2]+'\n'
 	        }
 	        },
