@@ -1,3 +1,4 @@
+* v0.1.2 : Set default log level to warn and make it configurable
 * v0.1.1 : Use root dir from the config to find step_definitions dir
 * v0.1.0 : Added basic support for tags.
 * v0.0.5 : Implemented keyword aliases and comments
