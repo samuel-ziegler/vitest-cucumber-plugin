@@ -40,10 +40,11 @@ branching model.  The 'main' branch the release branch and is only pushed to dur
 1. ```$ git flow release start $VERSION```
 1. Update version number in package.json
 1. Add the release notes to [RELEASE_NOTES.md](RELEASE_NOTES.md).
-1. ```git add . ; git commit -m $VERSION```
-1. ```git flow release finish $VERSION```
-1. ```git push```
-1. ```git checkout main```
-1. ```git push```
-1. ```git push origin $VERSION```
-1. npm publish
+1. ```$ git add . ; git commit -m $VERSION```
+2. ```$ npm test```
+3. ```$ git flow release finish $VERSION```
+4. ```$ git push```
+5. ```$ git checkout main```
+6. ```$ git push```
+7. ```$ git push origin $VERSION```
+8. ```$ npm publish```
