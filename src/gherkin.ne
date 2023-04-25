@@ -118,7 +118,6 @@ bolText -> %ws %word {% data => data[1].value %}
 
 freeform -> null {% data => '' %}
   | freeform bolText text %newline {% (data) => {
-  log.debug('freeform line: '+JSON.stringify([data[0],data[1],data[2]]));
   return data[0]+data[1]+data[2]+'\n'
 }
 %}

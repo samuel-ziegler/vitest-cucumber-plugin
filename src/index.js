@@ -3,7 +3,7 @@ import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
 import { parameterizeText } from './parameterize.js';
 import { generateFeature } from './generate/index.js';
-import { log } from './logger.js';
+import { log, setLogLevel } from './logger.js';
 import { parse } from './parse.js';
 
 const featureRegex = /\.feature$/;
@@ -54,6 +54,9 @@ export default function vitestCucumberPlugin() {
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
+            if (_.has('test.cucumber.logLevel',resolvedConfig)) {
+                setLogLevel(resolvedConfig.test.cucumber.logLevel);
+            }
             log.debug('config: resolvedConfig:'+JSON.stringify(resolvedConfig,null,2));
             config = _.get('test.cucumber',resolvedConfig);
             config = _.set('root',resolvedConfig.root,config);
