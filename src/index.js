@@ -5,6 +5,12 @@ import { generateFeature } from './generate/index.js';
 import { log, setLogLevel } from './logger.js';
 import { parse } from './parse.js';
 import { tagsFunction } from './tags.js';
+import {
+    BeforeAll, applyBeforeAllHooks,
+    Before, applyBeforeHooks,
+    AfterAll, applyAfterAllHooks,
+    After, applyAfterHooks,
+} from './hooks.js';
 
 const featureRegex = /\.feature$/;
 
@@ -15,6 +21,12 @@ const compileFeatureToJS = (config,featureSrc) => {
 
     return code;
 }
+
+export { BeforeAll, Before, AfterAll, After };
+
+export { applyBeforeAllHooks, applyBeforeHooks, applyAfterAllHooks, applyAfterHooks };
+
+export { setLogLevel, log };
 
 export const Given = addStepDefinition;
 export const When = addStepDefinition;
@@ -43,12 +55,8 @@ export default function vitestCucumberPlugin() {
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            if (_.has('test.cucumber.logLevel',resolvedConfig)) {
-                setLogLevel(resolvedConfig.test.cucumber.logLevel);
-            }
-
-            config = _.get('test.cucumber',resolvedConfig);
-            config = _.set('root',resolvedConfig.root,config);
+            config = _.defaults({ root : resolvedConfig.root, logLevel : 'warn' },_.get('test.cucumber',resolvedConfig))
+            setLogLevel(config.logLevel);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
 

@@ -7,7 +7,9 @@ export const generateTests = (steps,parameterMap,extraIndent) => {
     log.debug('generateTests steps : '+JSON.stringify(steps));
     const indent = extraIndent ? extraIndent : '';
     let tests = `
-${indent}    var state = {};`;
+${indent}    beforeAll(async () => { state = await applyBeforeHooks(state);});
+${indent}    afterAll(async () => { state = await applyAfterHooks(state);});
+`;
     
     _.forEach((step) => {
         const parameterizedText = ( parameterMap ? parameterizeText(step.text,parameterMap) : step.text);
