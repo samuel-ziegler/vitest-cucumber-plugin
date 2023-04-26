@@ -1,54 +1,11 @@
 import require$$0 from 'lodash/fp.js';
 import require$$1 from 'moo';
-import pino from 'pino';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
-function getAugmentedNamespace(n) {
-  if (n.__esModule) return n;
-  var f = n.default;
-	if (typeof f == "function") {
-		var a = function a () {
-			if (this instanceof a) {
-				var args = [null];
-				args.push.apply(args, arguments);
-				var Ctor = Function.bind.apply(f, args);
-				return new Ctor();
-			}
-			return f.apply(this, arguments);
-		};
-		a.prototype = f.prototype;
-  } else a = {};
-  Object.defineProperty(a, '__esModule', {value: true});
-	Object.keys(n).forEach(function (k) {
-		var d = Object.getOwnPropertyDescriptor(n, k);
-		Object.defineProperty(a, k, d.get ? d : {
-			enumerable: true,
-			get: function () {
-				return n[k];
-			}
-		});
-	});
-	return a;
-}
-
 var gherkin_umd$1 = {exports: {}};
-
-const log = pino();
-
-log.level = 'warn';
-
-const setLogLevel = (logLevel) => { log.level = logLevel; };
-
-var logger = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	log: log,
-	setLogLevel: setLogLevel
-});
-
-var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 
 (function (module) {
 	// Generated automatically by nearley, version 2.20.1
@@ -57,7 +14,6 @@ var require$$2 = /*@__PURE__*/getAugmentedNamespace(logger);
 
 	const fp = require$$0;
 	const moo = require$$1;
-	require$$2.log;
 	const lexer = moo.compile({
 	  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
 	  newline : { match : '\n', lineBreaks : true },

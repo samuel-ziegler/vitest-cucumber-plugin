@@ -7,15 +7,15 @@
         "vitest",
         "cucumber"
     ],
-    "homepage": "https://github.com/SamZiegler/vitest-cucumber-plugin#readme",
+    "homepage": "https://github.com/samuel-ziegler/vitest-cucumber-plugin#readme",
     "bugs": {
-        "url": "https://github.com/SamZiegler/vitest-cucumber-plugin/issues"
+        "url": "https://github.com/samuel-ziegler/vitest-cucumber-plugin/issues"
     },
     "license": "MIT",
     "main": "src/index.js",
     "type": "module",
     "scripts": {
-        "nearley": "nearleyc src/gherkin.ne -o src/gherkin.umd.js && rollup -c rollup-nearley.js",
+        "nearley": "./generate-parsers",
         "test": "./run-tests"
     },
     "dependencies": {
@@ -30,5 +30,5 @@
         "@types/lodash": "^4.14.194",
         "rollup": "^3.20.7"
     },
-    "repository": "https://github.com/SamZiegler/vitest-cucumber-plugin.git"
+    "repository": "https://github.com/samuel-ziegler/vitest-cucumber-plugin.git"
 }

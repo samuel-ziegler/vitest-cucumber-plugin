@@ -1,4 +1,4 @@
-@goodstuff @moregoodstuff
+@goodeats @moregoodstuff
 Feature: Tags support
 
   @skip
@@ -10,7 +10,7 @@ Feature: Tags support
       | pea   |
 
   @yuck
-  Scenario: It's another scenario!
+  Scenario: Skip this scenario!
     Given I have a "apple"
     When I get a "pea"
     Then I have the following items:
