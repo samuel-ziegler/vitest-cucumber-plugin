@@ -1,3 +1,4 @@
+* v0.1.6 : Implemented tags boolean expression support
 * v0.1.5 : Implemented escape characters for Data Tables
 * v0.1.4 : Changed README to point to RPM registry
 * v0.1.3 : Import modules from generated code to make sure they are processed correctly
