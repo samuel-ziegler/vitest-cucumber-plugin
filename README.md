@@ -22,7 +22,10 @@ import vitestCucumberPlugin from 'vitest-cucumber-plugin';
 export default defineConfig({
     plugins: [vitestCucumberPlugin()],
     test: {
-        include : [ '**/*.feature' ]
+        include : [ '**/*.feature' ],
+        cucumber : {
+           tags : "<tags boolean expression>"
+        }
     },
 })
 ```
