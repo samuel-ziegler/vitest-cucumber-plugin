@@ -49,8 +49,9 @@ there are a few differences in how step definitions are written.
 
 The function signatures for Given, When and Then callbacks have been modified in order to make the step definitions
 more friendly for functional programming.  Specifically, the callback functions differ in that they
-now have two parameters, a state object and array of parameters.  The callback functions then return a new state
-object which is passed to the next step definition in the chain.
+now have three parameters.  The first parameter is a state object which was returned by the previous step.  The
+second is an array of parameters values.  The third is a data table or a doc string.  The callback functions then
+return a new state object which is passed to the next step definition in the chain.
 
 For example, here is how you'd write step definitions in Cucumber:
 ```
@@ -73,7 +74,7 @@ When('I ask whether it\'s Friday yet', function () {
   this.actualAnswer = isItFriday(this.today);
 });
 
-Then('I should be told {string}', function (expectedAnswer) {
+Then('I should be told {string}', function (expectedAnswer, dataTable) {
   assert.strictEqual(this.actualAnswer, expectedAnswer);
 });
 ```
@@ -96,7 +97,7 @@ When('I ask whether it\'s Friday yet', function (state) {
     return _.set('answer',(state.today === 'Friday') ? 'TGIF' : 'Nope',state);
 });
 
-Then('I should be told {string}', function (state,[ answer ]) {
+Then('I should be told {string}', function (state,[ answer ], dataTable) {
     expect(state.answer).toBe(answer);
 });
 ```
