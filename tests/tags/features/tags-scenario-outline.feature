@@ -1,3 +1,4 @@
+@goodstuff
 Feature: Tags support for Scenario Outlines
   @good
   Scenario Outline:
@@ -8,14 +9,20 @@ Feature: Tags support for Scenario Outlines
       | grape |
 
     @good
-    Examples:
+    Examples: Keep this!
       | item1 | item2 |
       | apple | grape |
 
     @skip
-    Examples:
+    Examples: Skip this!
       | item1 | item2  |
       | apple | bogus  |
+
+    # This one should happen because goodstuff is inherited
+    @yuck
+    Examples: Keep this too!
+      | item1 | item2 |
+      | apple | grape |
 
   @skip
   Scenario Outline:
@@ -25,6 +32,6 @@ Feature: Tags support for Scenario Outlines
       | apple |
       | grape |
 
-    Examples:
+    Examples: Skip me!
       | item1 | item2 |
       | bogus | grape |

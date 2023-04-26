@@ -6,7 +6,7 @@ export default defineConfig({
     test: {
         include : [ '**/*.feature' ],
         cucumber : {
-            tags : { exclude : ['skip','yuck'] }
+            tags : "not (@skip or @yuck) or (@yuck and @goodstuff)",
         },
     },
 })

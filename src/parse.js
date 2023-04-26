@@ -11,7 +11,7 @@ export const parse = (src) => {
     if (parser.results.length == 0) {
         throw new Error('Unexpected end of file');
     }
-    log.debug('parsing result: '+JSON.stringify(parser.results,null,2));
+    log.debug('parsing result: '+JSON.stringify(parser.results));
     if (parser.results.length > 1) {
         throw new Error('Ambiguous parsing: '+parser.results.length);
     }

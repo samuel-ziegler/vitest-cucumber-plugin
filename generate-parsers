@@ -1,0 +1,6 @@
+#!/bin/bash
+
+nearleyc src/gherkin.ne -o src/gherkin.umd.js || exit 1
+nearleyc src/tags-expression.ne -o src/tags-expression.umd.js || exit 1
+rollup -c rollup-gherkin.js || exit 1
+rollup -c rollup-tags-expression.js || exit 1

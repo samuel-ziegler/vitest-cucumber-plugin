@@ -13,7 +13,8 @@ export const generateExample = (config,example) => {
     
     const skip = shouldSkip(config,example.tags) ? '.skip' : '';
 
-    const code = `  describe${skip}('${escape(example.type.name)}: ${escape(example.name)}', () => {${tests}
+    const code = `  // tags : ${JSON.stringify(example.tags)}
+  describe${skip}('${escape(example.type.name)}: ${escape(example.name)}', () => {${tests}
   });
 `;
     return code;
