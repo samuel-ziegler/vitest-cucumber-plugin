@@ -1,4 +1,4 @@
-import { BeforeAll, AfterAll, Before, After } from 'vitest-cucumber-plugin';
+import { BeforeAll, AfterAll, Before, After, BeforeStep, AfterStep } from 'vitest-cucumber-plugin';
 import _ from 'lodash/fp.js';
 
 BeforeAll('add beforeAll1',(state) => {
@@ -62,4 +62,14 @@ After('check that After happened',(state) => {
     state = _.set('after',[],state);
     state = _.set('before',[],state);
     return state;
+});
+
+BeforeStep('add index to beforeStep',(state) => {
+    const beforeStep = _.getOr([],'beforeStep',state);
+    return _.set('beforeStep',_.concat(beforeStep.length,beforeStep),state)
+});
+
+AfterStep('remove index from beforeStep',(state) => {
+    const beforeStep = _.getOr([],'beforeStep',state);
+    return _.set('beforeStep',_.tail(1,beforeStep),state)
 });

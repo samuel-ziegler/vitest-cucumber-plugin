@@ -8,7 +8,9 @@ export const generateTests = (steps,parameterMap,extraIndent) => {
     const indent = extraIndent ? extraIndent : '';
     let tests = `
 ${indent}    beforeAll(async () => { state = await applyBeforeHooks(state);});
+${indent}    beforeEach(async () => { state = await applyBeforeStepHooks(state);});
 ${indent}    afterAll(async () => { state = await applyAfterHooks(state);});
+${indent}    afterEach(async () => { state = await applyAfterStepHooks(state);});
 `;
     
     _.forEach((step) => {

@@ -24,13 +24,15 @@ export const generateFeature = (config,feature) => {
     const skip = shouldSkip(config,feature.tags) ? '.skip' : '';
     const configStr = JSON.stringify(config);
 
-    const code = `import { expect, test, describe, beforeAll, afterAll } from 'vitest';
+    const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import {
     Test,
     applyBeforeAllHooks,
     applyBeforeHooks,
+    applyBeforeStepHooks,
     applyAfterAllHooks,
     applyAfterHooks,
+    applyAfterStepHooks,
 } from 'vitest-cucumber-plugin';
 import { readdir } from 'node:fs/promises';
 import { log, setLogLevel } from 'vitest-cucumber-plugin';

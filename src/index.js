@@ -10,6 +10,8 @@ import {
     Before, applyBeforeHooks,
     AfterAll, applyAfterAllHooks,
     After, applyAfterHooks,
+    BeforeStep, applyBeforeStepHooks,
+    AfterStep, applyAfterStepHooks,
 } from './hooks.js';
 
 const featureRegex = /\.feature$/;
@@ -22,9 +24,16 @@ const compileFeatureToJS = (config,featureSrc) => {
     return code;
 }
 
-export { BeforeAll, Before, AfterAll, After };
+export { BeforeAll, Before, AfterAll, After, BeforeStep, AfterStep };
 
-export { applyBeforeAllHooks, applyBeforeHooks, applyAfterAllHooks, applyAfterHooks };
+export {
+    applyBeforeAllHooks,
+    applyBeforeHooks,
+    applyAfterAllHooks,
+    applyAfterHooks,
+    applyBeforeStepHooks,
+    applyAfterStepHooks,
+};
 
 export { setLogLevel, log };
 

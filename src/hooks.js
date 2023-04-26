@@ -4,8 +4,10 @@ import _ from 'lodash/fp.js';
 const allHooks = {
     beforeAll : [],
     before : [],
+    beforeStep : [],
     afterAll : [],
     after : [],
+    afterStep : [],
 };
 
 const applyHooks = async (hooksName,state) => {
@@ -36,8 +38,14 @@ export const applyBeforeAllHooks = (state) => applyHooks('beforeAll',state);
 export const Before = (name,f) => { addHook('before',name,f) };
 export const applyBeforeHooks = (state) => applyHooks('before',state);
 
+export const BeforeStep = (name,f) => { addHook('beforeStep',name,f) };
+export const applyBeforeStepHooks = (state) => applyHooks('beforeStep',state);
+
 export const AfterAll = (name,f) => { addHook('afterAll',name,f) };
 export const applyAfterAllHooks = (state) => applyHooks('afterAll',state);
 
 export const After = (name,f) => { addHook('after',name,f) };
 export const applyAfterHooks = (state) => applyHooks('after',state);
+
+export const AfterStep = (name,f) => { addHook('afterStep',name,f) };
+export const applyAfterStepHooks = (state) => applyHooks('afterStep',state);

@@ -10,6 +10,13 @@ When('the {string} property is an array with the values:',(state,[ propertyName 
     return state;
 });
 
+When('the {string} property is an array with the integer values:',(state,[ propertyName ],dataTable) => {
+    let values = _.flatten(dataTable);
+    values = _.map(parseInt)(values);
+    expect(state[propertyName]).toEqual(values);
+    return state;
+});
+
 When('the {string} property does not exist',(state,[propertyName]) => {
     expect(_.has('propertyName',state)).toBeFalsy();
     return state;
