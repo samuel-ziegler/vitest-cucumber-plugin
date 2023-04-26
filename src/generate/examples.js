@@ -41,7 +41,9 @@ export const generateExamples = (config,steps,examplesStatement) => {
     const skip = shouldSkip(config,examplesStatement.tags) ? '.skip' : '';
 
     const allTests = generateAllTests(steps,parameters,parameterValues);
-    const code = `    describe${skip}('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
+    const code = `
+    // tags : ${JSON.stringify(examplesStatement.tags)}
+    describe${skip}('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
     });`;
     return code;
 }

@@ -5,7 +5,6 @@ function id(x) { return x[0]; }
 
 const fp = require('lodash/fp.js');
 const moo = require('moo');
-const log = require('./logger.js').log;
 const lexer = moo.compile({
   emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
   newline : { match : '\n', lineBreaks : true },

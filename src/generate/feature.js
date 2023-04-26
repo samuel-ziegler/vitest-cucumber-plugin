@@ -11,6 +11,9 @@ export const generateFeature = (config,feature) => {
         if (feature.background) {
             statement = _.set('background',feature.background,statement);
         }
+
+        statement = _.set('tags',_.concat(feature.tags,statement.tags),statement);
+        
         if (statement.type.type === 'example') {
             return testStatements + generateExample(config,statement);
         } else if (statement.type.type === 'scenarioOutline') {
@@ -36,10 +39,10 @@ const importStepDefinitions = async (config) => {
 
 await importStepDefinitions(${configStr});
 
+// tags : ${JSON.stringify(feature.tags)}
 describe${skip}('${escape(feature.type.name)}: ${escape(name)}', () => {
 ${testStatements}});
 `;
-    log.debug(code);
 
     return code;
 }

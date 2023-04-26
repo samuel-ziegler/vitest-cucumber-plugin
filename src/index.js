@@ -4,6 +4,7 @@ import { parameterizeText } from './parameterize.js';
 import { generateFeature } from './generate/index.js';
 import { log, setLogLevel } from './logger.js';
 import { parse } from './parse.js';
+import { tagsFunction } from './tags.js';
 
 const featureRegex = /\.feature$/;
 
@@ -11,8 +12,6 @@ const compileFeatureToJS = (config,featureSrc) => {
     const feature = parse(featureSrc);
 
     const code = generateFeature(config,feature);
-
-    log.debug(code);
 
     return code;
 }
@@ -47,14 +46,19 @@ export default function vitestCucumberPlugin() {
             if (_.has('test.cucumber.logLevel',resolvedConfig)) {
                 setLogLevel(resolvedConfig.test.cucumber.logLevel);
             }
-            log.debug('config: resolvedConfig:'+JSON.stringify(resolvedConfig,null,2));
+
             config = _.get('test.cucumber',resolvedConfig);
             config = _.set('root',resolvedConfig.root,config);
+
+            config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
+
             log.debug('config: '+JSON.stringify(config));
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
                 const code = compileFeatureToJS(config,src);
+
+                log.debug('transform '+id+' -> '+code);
 
                 return {
                     code
