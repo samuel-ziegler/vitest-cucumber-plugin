@@ -149,6 +149,7 @@ var grammar = {
     {"name": "contentType", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
     {"name": "docText", "symbols": [], "postprocess": data => ''},
     {"name": "docText", "symbols": ["docText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]+data[1]+data[2].value},
+    {"name": "docText", "symbols": ["docText", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]+data[1].value},
     {"name": "_", "symbols": [], "postprocess": data => ''},
     {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0].value},
     {"name": "emptyLines", "symbols": [], "postprocess": data => ''},

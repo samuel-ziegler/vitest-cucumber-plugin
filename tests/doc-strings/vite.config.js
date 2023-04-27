@@ -5,6 +5,5 @@ export default defineConfig({
     plugins: [vitestCucumberPlugin()],
     test: {
         include : [ '**/*.feature' ],
-        cucumber : { logLevel : 'debug' },
     },
 })

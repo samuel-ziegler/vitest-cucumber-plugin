@@ -177,6 +177,7 @@ contentType -> null {% data => null %}
 
 docText -> null {% data => '' %}
   | docText text %newline {% data => data[0]+data[1]+data[2].value %}
+  | docText %emptyLine {% data => data[0]+data[1].value %}
 
 _ -> null {% data => '' %}
   | %ws {% data => data[0].value %}

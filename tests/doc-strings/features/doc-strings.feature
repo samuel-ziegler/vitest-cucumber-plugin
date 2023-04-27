@@ -3,6 +3,7 @@ Feature: Doc Strings
     Given the following doc string:
       """markdown
       This is some cool text.
+
         It is fun.
       """
       
@@ -14,6 +15,7 @@ Feature: Doc Strings
     Then final doc string will look like this:
    """
    This is some cool text.
+
      It is fun.
    This is more fun.
    """
