@@ -1,3 +1,4 @@
+* v0.1.7 : Implemented Hooks API
 * v0.1.6 : Implemented tags boolean expression support
 * v0.1.5 : Implemented escape characters for Data Tables
 * v0.1.4 : Changed README to point to RPM registry

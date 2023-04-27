@@ -23,23 +23,57 @@ export const generateFeature = (config,feature) => {
 
     const skip = shouldSkip(config,feature.tags) ? '.skip' : '';
     const configStr = JSON.stringify(config);
+    const tagsStr = JSON.stringify(feature.tags);
 
-    const code = `import { expect, test, describe } from 'vitest';
-import { Test } from 'vitest-cucumber-plugin';
+    const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import {
+    Test,
+    applyBeforeAllHooks,
+    applyBeforeHooks,
+    applyBeforeStepHooks,
+    applyAfterAllHooks,
+    applyAfterHooks,
+    applyAfterStepHooks,
+} from 'vitest-cucumber-plugin';
 import { readdir } from 'node:fs/promises';
+import { log, setLogLevel } from 'vitest-cucumber-plugin';
 
-const importStepDefinitions = async (config) => {
-    const stepDefinitionDirectory = config.root+'/features/step_definitions';
-    const files = await readdir(stepDefinitionDirectory);
-    for (const file of files) {
-        const stepDefinition = stepDefinitionDirectory+'/'+file;
-        await import(stepDefinition);
+setLogLevel('${config.logLevel}');
+
+const importDirectory = async (directory) => {
+    log.debug('importDirectory directory: '+directory);
+    try {
+        const files = await readdir(directory);
+
+        for (const file of files) {
+            const filename = directory+'/'+file;
+            log.debug('importDirectory import: '+filename);
+            await import(filename);
+        }
+    } catch (e) {
+        log.debug('importDirectory error: '+e);
     }
 };
 
+const importSupportFiles = async (config) => importDirectory(config.root+'/features/support');
+
+await importSupportFiles(${configStr});
+
+const importStepDefinitions = async (config) => importDirectory(config.root+'/features/step_definitions');
+
 await importStepDefinitions(${configStr});
 
-// tags : ${JSON.stringify(feature.tags)}
+var state = {};
+
+beforeAll(async () => {
+    state = await applyBeforeAllHooks(state,${tagsStr});
+});
+
+afterAll(async () => {
+    state = await applyAfterAllHooks(state,${tagsStr});
+});
+
+// tags : ${tagsStr}
 describe${skip}('${escape(feature.type.name)}: ${escape(name)}', () => {
 ${testStatements}});
 `;

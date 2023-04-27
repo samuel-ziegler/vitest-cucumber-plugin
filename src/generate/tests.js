@@ -3,11 +3,16 @@ import { escape } from './util.js';
 import { parameterizeText } from '../parameterize.js';
 import { log } from '../logger.js';
 
-export const generateTests = (steps,parameterMap,extraIndent) => {
+export const generateTests = (steps,parameterMap,tags,extraIndent) => {
     log.debug('generateTests steps : '+JSON.stringify(steps));
+    const tagsStr = JSON.stringify(tags);
     const indent = extraIndent ? extraIndent : '';
     let tests = `
-${indent}    var state = {};`;
+${indent}    beforeAll(async () => { state = await applyBeforeHooks(state,${tagsStr}); });
+${indent}    beforeEach(async () => { state = await applyBeforeStepHooks(state,${tagsStr}); });
+${indent}    afterAll(async () => { state = await applyAfterHooks(state,${tagsStr}); });
+${indent}    afterEach(async () => { state = await applyAfterStepHooks(state,${tagsStr}); });
+`;
     
     _.forEach((step) => {
         const parameterizedText = ( parameterMap ? parameterizeText(step.text,parameterMap) : step.text);

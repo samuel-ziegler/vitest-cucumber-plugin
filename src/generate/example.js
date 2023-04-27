@@ -9,7 +9,7 @@ export const generateExample = (config,example) => {
 
     const steps = _.has('background.steps',example) ? _.concat(example.background.steps,example.steps) : example.steps;
 
-    tests += generateTests(steps);
+    tests += generateTests(steps,{},example.tags);
     
     const skip = shouldSkip(config,example.tags) ? '.skip' : '';
 
