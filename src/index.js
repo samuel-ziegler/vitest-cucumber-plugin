@@ -45,7 +45,9 @@ export const Test = (state,step) => {
     log.debug('Test step: '+JSON.stringify(step)+' state:'+JSON.stringify(state));
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
-    const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,step.dataTable);
+    const extraData = step.dataTable ? step.dataTable : (step.docString ? step.docString.text : null );
+
+    const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
     log.debug('Test newState: '+JSON.stringify(newState));
 
     return newState;
