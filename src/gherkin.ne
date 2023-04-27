@@ -13,6 +13,7 @@ const lexer = moo.compile({
   escapedNewline : '\\n',
   escapedBackSlash : '\\\\',
   scenarioOutline : ['Scenario Outline','Scenario Template'],
+  docString : ['```','"""'],
   word : {
     match : /[^ \t\n\:\|\@\*]+/,
     type : moo.keywords({
@@ -25,6 +26,13 @@ const lexer = moo.compile({
     }),
   },
 });
+
+const trimWhitespace = (cols,str) => {
+  const lines = str.split('\n').slice(0,-1);
+  return fp.reduce((s,line) => {
+    return s+line.slice(cols)+'\n'
+},'')(lines);
+};
 %}
 
 @lexer lexer
@@ -98,7 +106,7 @@ examplesStatement -> _ examplesKeyword _ %colon text %newline {%
 %}
 examplesKeyword -> %examples {% data => data[0].value %}
 
-dataTable -> null {% data => [] %}
+dataTable -> dataTableRow {% data => [data[0]] %}
   | dataTable dataTableRow {% data => fp.concat(data[0],[data[1]]) %}
 
 dataTableRow -> _ %pipe dataTableColumns %newline {% data => data[2] %}
@@ -116,14 +124,17 @@ escapedColumnCharaters -> %escapedPipe {% data => '|' %}
   | %escapedBackSlash {% data => '\\' %}
   | %escapedNewline {% data => '\n' %}
 
-steps -> stepAndTable moreSteps {% data => fp.concat(data[0],data[1]) %}
+steps -> step moreSteps {% data => fp.concat(data[0],data[1]) %}
 
 moreSteps -> null {% data => [] %}
-  | moreSteps stepAndTable {% data => fp.concat(data[0],data[1]) %}
+  | moreSteps step {% data => fp.concat(data[0],data[1]) %}
   | moreSteps %emptyLine {% data => data[0] %}
 
-step -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
-stepAndTable -> step dataTable {% data => fp.set('dataTable',data[1],data[0]) %}
+step -> stepStatement
+  | stepStatement dataTable {% data => fp.set('dataTable',data[1],data[0]) %}
+  | stepStatement docString {% data => fp.set('docString',data[1],data[0]) %}
+
+stepStatement -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
 
 stepKeyword -> %step {% (data) => { return { type : 'step', name : data[0].value } } %}
 
@@ -152,6 +163,20 @@ freeform -> null {% data => '' %}
 }
 %}
   | freeform %emptyLine {% data => data[0]+'\n' %}
+
+docString -> docStringStatement docText docStringStatement {%
+  data => fp.set('text',trimWhitespace(data[0].ws.length,data[1]),data[0])
+%}
+docStringStatement -> _ %docString contentType %newline {%
+  (data) => { return { type : { type : 'docString', name : data[1].value }, ws : data[0], contentType : data[2] } }
+%}
+
+contentType -> null {% data => null %}
+  | %ws {% data => null %}
+  | %word {% data => data[0].value %}
+
+docText -> null {% data => '' %}
+  | docText text %newline {% data => data[0]+data[1]+data[2].value %}
 
 _ -> null {% data => '' %}
   | %ws {% data => data[0].value %}

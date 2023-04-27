@@ -17,6 +17,7 @@ const lexer = moo.compile({
   escapedNewline : '\\n',
   escapedBackSlash : '\\\\',
   scenarioOutline : ['Scenario Outline','Scenario Template'],
+  docString : ['```','"""'],
   word : {
     match : /[^ \t\n\:\|\@\*]+/,
     type : moo.keywords({
@@ -29,6 +30,13 @@ const lexer = moo.compile({
     }),
   },
 });
+
+const trimWhitespace = (cols,str) => {
+  const lines = str.split('\n').slice(0,-1);
+  return fp.reduce((s,line) => {
+    return s+line.slice(cols)+'\n'
+},'')(lines);
+};
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -86,7 +94,7 @@ var grammar = {
         (data) => { return { type : { type : 'examples', name : data[1] }, name : data[4] } }
         },
     {"name": "examplesKeyword", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},
-    {"name": "dataTable", "symbols": [], "postprocess": data => []},
+    {"name": "dataTable", "symbols": ["dataTableRow"], "postprocess": data => [data[0]]},
     {"name": "dataTable", "symbols": ["dataTable", "dataTableRow"], "postprocess": data => fp.concat(data[0],[data[1]])},
     {"name": "dataTableRow", "symbols": ["_", (lexer.has("pipe") ? {type: "pipe"} : pipe), "dataTableColumns", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[2]},
     {"name": "dataTableColumns", "symbols": [], "postprocess": data => []},
@@ -99,12 +107,14 @@ var grammar = {
     {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedPipe") ? {type: "escapedPipe"} : escapedPipe)], "postprocess": data => '|'},
     {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedBackSlash") ? {type: "escapedBackSlash"} : escapedBackSlash)], "postprocess": data => '\\'},
     {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedNewline") ? {type: "escapedNewline"} : escapedNewline)], "postprocess": data => '\n'},
-    {"name": "steps", "symbols": ["stepAndTable", "moreSteps"], "postprocess": data => fp.concat(data[0],data[1])},
+    {"name": "steps", "symbols": ["step", "moreSteps"], "postprocess": data => fp.concat(data[0],data[1])},
     {"name": "moreSteps", "symbols": [], "postprocess": data => []},
-    {"name": "moreSteps", "symbols": ["moreSteps", "stepAndTable"], "postprocess": data => fp.concat(data[0],data[1])},
+    {"name": "moreSteps", "symbols": ["moreSteps", "step"], "postprocess": data => fp.concat(data[0],data[1])},
     {"name": "moreSteps", "symbols": ["moreSteps", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]},
-    {"name": "step", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
-    {"name": "stepAndTable", "symbols": ["step", "dataTable"], "postprocess": data => fp.set('dataTable',data[1],data[0])},
+    {"name": "step", "symbols": ["stepStatement"]},
+    {"name": "step", "symbols": ["stepStatement", "dataTable"], "postprocess": data => fp.set('dataTable',data[1],data[0])},
+    {"name": "step", "symbols": ["stepStatement", "docString"], "postprocess": data => fp.set('docString',data[1],data[0])},
+    {"name": "stepStatement", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
     {"name": "stepKeyword", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": (data) => { return { type : 'step', name : data[0].value } }},
     {"name": "text", "symbols": [], "postprocess": data => ''},
     {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
@@ -128,6 +138,17 @@ var grammar = {
         }
         },
     {"name": "freeform", "symbols": ["freeform", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]+'\n'},
+    {"name": "docString", "symbols": ["docStringStatement", "docText", "docStringStatement"], "postprocess": 
+        data => fp.set('text',trimWhitespace(data[0].ws.length,data[1]),data[0])
+        },
+    {"name": "docStringStatement", "symbols": ["_", (lexer.has("docString") ? {type: "docString"} : docString), "contentType", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+        (data) => { return { type : { type : 'docString', name : data[1].value }, ws : data[0], contentType : data[2] } }
+        },
+    {"name": "contentType", "symbols": [], "postprocess": data => null},
+    {"name": "contentType", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => null},
+    {"name": "contentType", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0].value},
+    {"name": "docText", "symbols": [], "postprocess": data => ''},
+    {"name": "docText", "symbols": ["docText", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => data[0]+data[1]+data[2].value},
     {"name": "_", "symbols": [], "postprocess": data => ''},
     {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0].value},
     {"name": "emptyLines", "symbols": [], "postprocess": data => ''},
