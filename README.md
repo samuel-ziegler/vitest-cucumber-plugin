@@ -106,9 +106,3 @@ Then('I should be told {string}', function (state,[ answer ], dataTable) {
 
 Currently, all step definition files must be in ECMAScript module format.  CommonJS files might
 work, but this configuration isn't tested.
-
-
-### Not yet implemented
-
-This plugin is not yet feature complete.  Here is the list of features from Cucumber which aren't yet implemented:
-* Doc strings
