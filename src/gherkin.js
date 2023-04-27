@@ -34,6 +34,7 @@ var gherkin_umd$1 = {exports: {}};
 	      step : ['Given','When','Then','And','But'],
 	      example : ['Example','Scenario'],
 	      background : 'Background',
+	      rule : 'Rule',
 	    }),
 	  },
 	});
@@ -61,6 +62,7 @@ var gherkin_umd$1 = {exports: {}};
 	        },
 	    {"name": "statement", "symbols": ["example"], "postprocess": data => data[0]},
 	    {"name": "statement", "symbols": ["scenarioOutline"], "postprocess": data => data[0]},
+	    {"name": "statement", "symbols": ["rule"], "postprocess": data => data[0]},
 	    {"name": "statements", "symbols": [], "postprocess": data => []},
 	    {"name": "statements", "symbols": ["statements", "statement"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "example", "symbols": ["tags", "exampleStatement", "steps"], "postprocess": (data) => fp.assign(data[1],{ tags : data[0], steps : data[2] })},
@@ -68,6 +70,8 @@ var gherkin_umd$1 = {exports: {}};
 	        (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 	        },
 	    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "exampleList", "symbols": [], "postprocess": data => []},
+	    {"name": "exampleList", "symbols": ["exampleList", "example"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "scenarioOutline", "symbols": ["tags", "scenarioOutlineStatement", "steps", "examplesList"], "postprocess": 
 	        data => fp.assign(data[1],{ tags : data[0], steps : data[2], examples : data[3] })
 	        },
@@ -75,6 +79,13 @@ var gherkin_umd$1 = {exports: {}};
 	        (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
 	        },
 	    {"name": "scenarioOutlineKeyword", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
+	    {"name": "rule", "symbols": ["tags", "ruleStatement", "example", "exampleList"], "postprocess": 
+	        data => fp.assign(data[1],{ tags : data[0], examples : fp.concat(data[2],data[3]) })
+	        },
+	    {"name": "ruleStatement", "symbols": ["_", "ruleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+	        (data) => { return { type : { type : 'rule', name : data[1] }, name : data[4].trim() } }
+	        },
+	    {"name": "ruleKeyword", "symbols": [(lexer.has("rule") ? {type: "rule"} : rule)], "postprocess": data => data[0].value},
 	    {"name": "examplesList", "symbols": [], "postprocess": data => []},
 	    {"name": "examplesList", "symbols": ["examplesList", "examples"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "examples", "symbols": ["tags", "examplesStatement", "dataTable", "emptyLines"], "postprocess": 

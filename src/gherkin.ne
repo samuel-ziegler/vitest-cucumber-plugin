@@ -21,6 +21,7 @@ const lexer = moo.compile({
       step : ['Given','When','Then','And','But'],
       example : ['Example','Scenario'],
       background : 'Background',
+      rule : 'Rule',
     }),
   },
 });
@@ -56,6 +57,7 @@ backgroundStatement -> _ %background _ %colon text %newline {%
 
 statement -> example {% data => data[0] %}
   | scenarioOutline {% data => data[0] %}
+  | rule {% data => data[0] %}
 
 statements -> null {% data => [] %}
   | statements statement {% data => fp.concat(data[0],data[1]) %}
@@ -66,6 +68,9 @@ exampleStatement -> _ exampleKeyword _ %colon text %newline {%
 %}
 exampleKeyword -> %example {% data => data[0].value %}
 
+exampleList -> null {% data => [] %}
+  | exampleList example {% data => fp.concat(data[0],data[1]) %}
+
 scenarioOutline -> tags scenarioOutlineStatement steps examplesList {%
   data => fp.assign(data[1],{ tags : data[0], steps : data[2], examples : data[3] })
 %}
@@ -73,6 +78,14 @@ scenarioOutlineStatement -> _ scenarioOutlineKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'scenarioOutline', name : data[1] }, name : data[4].trim() } }
 %}
 scenarioOutlineKeyword -> %scenarioOutline {% data => data[0].value %}
+
+rule -> tags ruleStatement example exampleList {%
+  data => fp.assign(data[1],{ tags : data[0], examples : fp.concat(data[2],data[3]) })
+%}
+ruleStatement -> _ ruleKeyword  _ %colon text %newline {%
+  (data) => { return { type : { type : 'rule', name : data[1] }, name : data[4].trim() } }
+%}
+ruleKeyword -> %rule {% data => data[0].value %}
 
 examplesList -> null {% data => [] %}
   | examplesList examples {% data => fp.concat(data[0],data[1]) %}
