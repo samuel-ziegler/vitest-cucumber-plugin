@@ -23,6 +23,7 @@ export const generateFeature = (config,feature) => {
 
     const skip = shouldSkip(config,feature.tags) ? '.skip' : '';
     const configStr = JSON.stringify(config);
+    const tagsStr = JSON.stringify(feature.tags);
 
     const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import {
@@ -65,14 +66,14 @@ await importStepDefinitions(${configStr});
 var state = {};
 
 beforeAll(async () => {
-    state = await applyBeforeAllHooks(state);
+    state = await applyBeforeAllHooks(state,${tagsStr});
 });
 
 afterAll(async () => {
-    state = await applyAfterAllHooks(state);
+    state = await applyAfterAllHooks(state,${tagsStr});
 });
 
-// tags : ${JSON.stringify(feature.tags)}
+// tags : ${tagsStr}
 describe${skip}('${escape(feature.type.name)}: ${escape(name)}', () => {
 ${testStatements}});
 `;

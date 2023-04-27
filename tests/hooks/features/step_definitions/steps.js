@@ -21,3 +21,8 @@ When('the {string} property does not exist',(state,[propertyName]) => {
     expect(_.has('propertyName',state)).toBeFalsy();
     return state;
 });
+
+When('the {string} property is an empty array',(state,[ propertyName ]) => {
+    expect(state[propertyName]).toEqual([]);
+    return state;
+});

@@ -1,5 +1,6 @@
 import { log } from './logger.js';
 import _ from 'lodash/fp.js';
+import { tagsFunction } from './tags.js';
 
 const allHooks = {
     beforeAll : [],
@@ -10,42 +11,56 @@ const allHooks = {
     afterStep : [],
 };
 
-const applyHooks = async (hooksName,state) => {
+const applyHooks = async (hooksName,state,tags) => {
     const hooks = allHooks[hooksName];
     log.debug('applyHooks: '+hooksName+' state: '+JSON.stringify(state));
     for (let i = 0; i < hooks.length; i++) {
         let hook = hooks[i];
         
         log.debug('applyHooks name: '+hook.name+' state: '+JSON.stringify(state));
-        state = await hook.f(state);
-        log.debug('applyHooks name: '+hook.name+' new state: '+JSON.stringify(state));
+        
+        const result = hook.tagsFunction(tags);
+        
+        log.debug('applyHooks match? '+result+' tags: '+JSON.stringify(tags));
+        if (result) {
+            state = await hook.f(state);
+            log.debug('applyHooks name: '+hook.name+' new state: '+JSON.stringify(state));
+        }
     }
     return state;
 };
 
-const addHook = (hooksName,name,f) => {
-    if (_.isFunction(name)) {
-        f = name;
-        name = 'unnamed';
+const addHook = (hooksName,opts,f) => {
+    if (_.isFunction(opts)) {
+        opts = { name : '', f : opts };
+    } else if (_.isString(opts)) {
+        opts = { name : opts, f };
+    } else if (_.isObject(opts)) {
+        opts.f = f;
+    } else {
+        throw new Error('Unknown options argument: '+JSON.stringify(opts));
     }
-    log.debug('addHook hooksName: '+hooksName+' name: '+name);
-    allHooks[hooksName] = _.concat(allHooks[hooksName],{ name, f });
+
+    opts = _.set('tagsFunction',tagsFunction(opts.tags),opts);
+    
+    log.debug('addHook hooksName: '+hooksName+' name: '+opts.name);
+    allHooks[hooksName] = _.concat(allHooks[hooksName],opts);
 };
 
-export const BeforeAll = (name,f) => { addHook('beforeAll',name,f) };
-export const applyBeforeAllHooks = (state) => applyHooks('beforeAll',state);
+export const BeforeAll = (opts,f) => { addHook('beforeAll',opts,f) };
+export const applyBeforeAllHooks = (state,tags) => applyHooks('beforeAll',state,tags);
 
-export const Before = (name,f) => { addHook('before',name,f) };
-export const applyBeforeHooks = (state) => applyHooks('before',state);
+export const Before = (opts,f) => { addHook('before',opts,f) };
+export const applyBeforeHooks = (state,tags) => applyHooks('before',state,tags);
 
-export const BeforeStep = (name,f) => { addHook('beforeStep',name,f) };
-export const applyBeforeStepHooks = (state) => applyHooks('beforeStep',state);
+export const BeforeStep = (opts,f) => { addHook('beforeStep',opts,f) };
+export const applyBeforeStepHooks = (state,tags) => applyHooks('beforeStep',state,tags);
 
-export const AfterAll = (name,f) => { addHook('afterAll',name,f) };
-export const applyAfterAllHooks = (state) => applyHooks('afterAll',state);
+export const AfterAll = (opts,f) => { addHook('afterAll',opts,f) };
+export const applyAfterAllHooks = (state,tags) => applyHooks('afterAll',state,tags);
 
-export const After = (name,f) => { addHook('after',name,f) };
-export const applyAfterHooks = (state) => applyHooks('after',state);
+export const After = (opts,f) => { addHook('after',opts,f) };
+export const applyAfterHooks = (state,tags) => applyHooks('after',state,tags);
 
-export const AfterStep = (name,f) => { addHook('afterStep',name,f) };
-export const applyAfterStepHooks = (state) => applyHooks('afterStep',state);
+export const AfterStep = (opts,f) => { addHook('afterStep',opts,f) };
+export const applyAfterStepHooks = (state,tags) => applyHooks('afterStep',state,tags);
