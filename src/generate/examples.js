@@ -14,12 +14,12 @@ const createParameterMap = (parameters,values) => {
     return parameterMap.map;
 }
 
-const generateAllTests = (steps,parameters,parameterValues) => {
+const generateAllTests = (steps,parameters,parameterValues,tags) => {
     const allTests = _.reduce((allTests,values) => {
         const parameterMap = createParameterMap(parameters,values);
         log.debug('parameterMap : '+JSON.stringify(parameterMap));
 
-        const tests = generateTests(steps,parameterMap,'    ');
+        const tests = generateTests(steps,parameterMap,tags,'    ');
 
         return { tests : allTests.tests + `
       describe('${allTests.index}',() => {${tests}
@@ -40,7 +40,7 @@ export const generateExamples = (config,steps,examplesStatement) => {
 
     const skip = shouldSkip(config,examplesStatement.tags) ? '.skip' : '';
 
-    const allTests = generateAllTests(steps,parameters,parameterValues);
+    const allTests = generateAllTests(steps,parameters,parameterValues,examplesStatement.tags);
     const code = `
     // tags : ${JSON.stringify(examplesStatement.tags)}
     describe${skip}('${escape(examplesStatement.type.name)}: ${escape(examplesStatement.name)}', () => {${allTests}
