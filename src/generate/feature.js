@@ -1,6 +1,6 @@
 import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
-import { generateExample, generateScenarioOutline } from './index.js';
+import { generateExample, generateScenarioOutline, generateRule } from './index.js';
 import { escape, shouldSkip } from './util.js';
 
 export const generateFeature = (config,feature) => {
@@ -18,6 +18,8 @@ export const generateFeature = (config,feature) => {
             return testStatements + generateExample(config,statement);
         } else if (statement.type.type === 'scenarioOutline') {
             return testStatements + generateScenarioOutline(config,statement);
+        } else if (statement.type.type === 'rule') {
+            return testStatements + generateRule(config,statement);
         }
     },'')(statements);
 
