@@ -53,7 +53,10 @@ const importDirectory = async (directory) => {
             await import(filename);
         }
     } catch (e) {
-        log.debug('importDirectory error: '+e);
+        if (e.code === "ENOENT") {
+            return;
+        }
+        throw e;
     }
 };
 
