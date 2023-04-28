@@ -38,9 +38,9 @@ import {
     applyAfterStepHooks,
 } from 'vitest-cucumber-plugin';
 import { readdir } from 'node:fs/promises';
-import { log, setLogLevel } from 'vitest-cucumber-plugin';
+import { log, logConfig } from 'vitest-cucumber-plugin';
 
-setLogLevel('${config.logLevel}');
+logConfig(${JSON.stringify(config.log)});
 
 const importDirectory = async (directory) => {
     log.debug('importDirectory directory: '+directory);

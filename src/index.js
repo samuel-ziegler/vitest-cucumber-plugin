@@ -2,7 +2,7 @@ import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
 import { parameterizeText } from './parameterize.js';
 import { generateFeature } from './generate/index.js';
-import { log, setLogLevel } from './logger.js';
+import { log, logConfig } from './logger.js';
 import { parse } from './parse.js';
 import { tagsFunction } from './tags.js';
 import {
@@ -35,7 +35,7 @@ export {
     applyAfterStepHooks,
 };
 
-export { setLogLevel, log };
+export { log, logConfig };
 
 export const Given = addStepDefinition;
 export const When = addStepDefinition;
@@ -48,6 +48,9 @@ export const Test = (state,step) => {
     const extraData = step.dataTable ? step.dataTable : (step.docString ? step.docString.text : null );
 
     const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
+    log.info(step.type.name+'(\''+stepDefinitionMatch.stepDefinition.expression+'\') ('+
+             JSON.stringify(state)+','+JSON.stringify(stepDefinitionMatch.parameters)+','+JSON.stringify(extraData)+
+             ') => '+JSON.stringify(newState));
     log.debug('Test newState: '+JSON.stringify(newState));
 
     return newState;
@@ -66,8 +69,9 @@ export default function vitestCucumberPlugin() {
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            config = _.defaults({ root : resolvedConfig.root, logLevel : 'warn' },_.get('test.cucumber',resolvedConfig))
-            setLogLevel(config.logLevel);
+            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' } },
+                                _.get('test.cucumber',resolvedConfig))
+            logConfig(config.log);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
 

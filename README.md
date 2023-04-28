@@ -24,11 +24,18 @@ export default defineConfig({
     test: {
         include : [ '**/*.feature' ],
         cucumber : {
-           tags : "<tags boolean expression>"
+           tags : "<tags boolean expression>", // Use this to filter the test via boolean tags expression
+           log : { 
+              level : "<'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'>",
+              file : "<log path>", // Write the logs to a file instead of stdio (the default)
+           }
         }
     },
 })
 ```
+
+Setting the log level to 'info' will cause the plugin to generate logs useful for tracking the state through
+the steps.  You can pipe the logs through pino-pretty to make them more human readable.
 
 ### Writing tests
 
