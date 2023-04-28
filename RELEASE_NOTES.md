@@ -1,3 +1,4 @@
+* v0.5.5 : Changed dynamic import statements to static ones so that Vitest watch works correctly
 * v0.5.4 : Added vue test
 * v0.5.3 : Provide code snippets when a step definition is not found
 * v0.5.2 : Throw an error if a step file import fails instead of logging it

@@ -16,10 +16,10 @@ import {
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS = (config,featureSrc) => {
+const compileFeatureToJS = async (config,featureSrc) => {
     const feature = parse(featureSrc);
 
-    const code = generateFeature(config,feature);
+    const code = await generateFeature(config,feature);
 
     return code;
 }
@@ -79,7 +79,7 @@ export default function vitestCucumberPlugin() {
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
-                const code = compileFeatureToJS(config,src);
+                const code = await compileFeatureToJS(config,src);
 
                 log.debug('transform '+id+' -> '+code);
 
