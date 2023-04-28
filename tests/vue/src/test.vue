@@ -7,3 +7,4 @@
   <div class="text">{{text}}</div>
   <button @click="text = 'Button pressed!'">Push me!</button>
 </template>
+

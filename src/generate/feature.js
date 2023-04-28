@@ -2,8 +2,11 @@ import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
 import { generateExample, generateScenarioOutline, generateRule } from './index.js';
 import { escape, shouldSkip } from './util.js';
+import { glob } from 'glob';
 
-export const generateFeature = (config,feature) => {
+const findJsFiles = async () => glob('features/**/*.js');
+
+export const generateFeature = async (config,feature) => {
     const name = feature.name;
     const statements = feature.statements;
 
@@ -27,6 +30,14 @@ export const generateFeature = (config,feature) => {
     const configStr = JSON.stringify(config);
     const tagsStr = JSON.stringify(feature.tags);
 
+    const jsFilesImportReducer = (imports,file) => {
+        file = file.slice('features/'.length);
+        return imports+`
+import './${file}';`;
+    };
+    const jsFiles = await findJsFiles();
+    const jsFilesImport = _.reduce(jsFilesImportReducer,'',jsFiles);
+
     const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import {
     Test,
@@ -38,35 +49,9 @@ import {
     applyAfterStepHooks,
 } from 'vitest-cucumber-plugin';
 import { readdir } from 'node:fs/promises';
-import { log, logConfig } from 'vitest-cucumber-plugin';
+import { log, logConfig } from 'vitest-cucumber-plugin';${jsFilesImport}
 
 logConfig(${JSON.stringify(config.log)});
-
-const importDirectory = async (directory) => {
-    log.debug('importDirectory directory: '+directory);
-    try {
-        const files = await readdir(directory);
-
-        for (const file of files) {
-            const filename = directory+'/'+file;
-            log.debug('importDirectory import: '+filename);
-            await import(filename);
-        }
-    } catch (e) {
-        if (e.code === "ENOENT") {
-            return;
-        }
-        throw e;
-    }
-};
-
-const importSupportFiles = async (config) => importDirectory(config.root+'/features/support');
-
-await importSupportFiles(${configStr});
-
-const importStepDefinitions = async (config) => importDirectory(config.root+'/features/step_definitions');
-
-await importStepDefinitions(${configStr});
 
 var state = {};
 

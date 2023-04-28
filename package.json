@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@cucumber/cucumber-expressions": "^16.1.2",
+        "glob": "^10.2.2",
         "lodash": "^4.17.21",
         "moo": "^0.5.2",
         "nearley": "^2.20.1",
