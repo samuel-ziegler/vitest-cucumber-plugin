@@ -20,7 +20,7 @@ var gherkin_umd$1 = {exports: {}};
 	  ws : /[ \t]+/,
 	  at : '@',
 	  colon : ':',
-	  step : '*',
+	  repeatStep : '*',
 	  pipe : '|',
 	  escapedPipe : '\\|',
 	  escapedNewline : '\\n',
@@ -32,7 +32,10 @@ var gherkin_umd$1 = {exports: {}};
 	    type : moo.keywords({
 	      feature : 'Feature',
 	      examples : ['Examples','Scenarios'],
-	      step : ['Given','When','Then','And','But'],
+	      given : 'Given',
+	      when : 'When',
+	      then : 'Then',
+	      repeatStep : ['And','But'],
 	      example : ['Example','Scenario'],
 	      background : 'Background',
 	      rule : 'Rule',
@@ -44,8 +47,18 @@ var gherkin_umd$1 = {exports: {}};
 	  const lines = str.split('\n').slice(0,-1);
 	  return fp.reduce((s,line) => {
 	    return s+line.slice(cols)+'\n'
-	},'')(lines);
+	  },'')(lines);
 	};
+
+	const setRepeatStepTypesReducer = (steps,step) => {
+	    if (!fp.has('type.type',step)) {
+	        step = fp.set('type.type',fp.last(steps).type.type,step);
+	    }
+	    return fp.concat(steps,step);
+	};
+
+	const setRepeatStepTypes = (steps) => fp.reduce(setRepeatStepTypesReducer,[],steps);
+
 	var grammar = {
 	    Lexer: lexer,
 	    ParserRules: [
@@ -116,15 +129,25 @@ var gherkin_umd$1 = {exports: {}};
 	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedPipe") ? {type: "escapedPipe"} : escapedPipe)], "postprocess": data => '|'},
 	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedBackSlash") ? {type: "escapedBackSlash"} : escapedBackSlash)], "postprocess": data => '\\'},
 	    {"name": "escapedColumnCharaters", "symbols": [(lexer.has("escapedNewline") ? {type: "escapedNewline"} : escapedNewline)], "postprocess": data => '\n'},
-	    {"name": "steps", "symbols": ["step", "moreSteps"], "postprocess": data => fp.concat(data[0],data[1])},
+	    {"name": "steps", "symbols": ["step", "moreSteps"], "postprocess": data => setRepeatStepTypes(fp.concat(data[0],data[1]))},
 	    {"name": "moreSteps", "symbols": [], "postprocess": data => []},
 	    {"name": "moreSteps", "symbols": ["moreSteps", "step"], "postprocess": data => fp.concat(data[0],data[1])},
+	    {"name": "moreSteps", "symbols": ["moreSteps", "repeatStep"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "moreSteps", "symbols": ["moreSteps", (lexer.has("emptyLine") ? {type: "emptyLine"} : emptyLine)], "postprocess": data => data[0]},
 	    {"name": "step", "symbols": ["stepStatement"]},
 	    {"name": "step", "symbols": ["stepStatement", "dataTable"], "postprocess": data => fp.set('dataTable',data[1],data[0])},
 	    {"name": "step", "symbols": ["stepStatement", "docString"], "postprocess": data => fp.set('docString',data[1],data[0])},
 	    {"name": "stepStatement", "symbols": ["_", "stepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": data => { return { type : data[1], text : data[2].trim() } }},
-	    {"name": "stepKeyword", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": (data) => { return { type : 'step', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": (data) => { return { type : 'given', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("when") ? {type: "when"} : when)], "postprocess": (data) => { return { type : 'when', name : data[0].value } }},
+	    {"name": "stepKeyword", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": (data) => { return { type : 'then', name : data[0].value } }},
+	    {"name": "repeatStep", "symbols": ["repeatStepStatement"]},
+	    {"name": "repeatStep", "symbols": ["repeatStepStatement", "dataTable"], "postprocess": data => fp.set('dataTable',data[1],data[0])},
+	    {"name": "repeatStep", "symbols": ["repeatStepStatement", "docString"], "postprocess": data => fp.set('docString',data[1],data[0])},
+	    {"name": "repeatStepStatement", "symbols": ["_", "repeatStepKeyword", "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
+	        data => { return { type : data[1], text : data[2].trim() } }
+	        },
+	    {"name": "repeatStepKeyword", "symbols": [(lexer.has("repeatStep") ? {type: "repeatStep"} : repeatStep)], "postprocess": (data) => { return { name : data[0].value } }},
 	    {"name": "text", "symbols": [], "postprocess": data => ''},
 	    {"name": "text", "symbols": ["text", (lexer.has("word") ? {type: "word"} : word)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": data => data[0]+data[1].value},
@@ -133,7 +156,10 @@ var gherkin_umd$1 = {exports: {}};
 	    {"name": "text", "symbols": ["text", (lexer.has("escapedPipe") ? {type: "escapedPipe"} : escapedPipe)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("escapedNewline") ? {type: "escapedNewline"} : escapedNewline)], "postprocess": data => data[0]+data[1].value},
 	    {"name": "text", "symbols": ["text", (lexer.has("escapedBackSlash") ? {type: "escapedBackSlash"} : escapedBackSlash)], "postprocess": data => data[0]+data[1].value},
-	    {"name": "keywords", "symbols": [(lexer.has("step") ? {type: "step"} : step)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("given") ? {type: "given"} : given)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("when") ? {type: "when"} : when)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("repeatStep") ? {type: "repeatStep"} : repeatStep)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},

@@ -7,7 +7,7 @@ const lexer = moo.compile({
   ws : /[ \t]+/,
   at : '@',
   colon : ':',
-  step : '*',
+  repeatStep : '*',
   pipe : '|',
   escapedPipe : '\\|',
   escapedNewline : '\\n',
@@ -19,7 +19,10 @@ const lexer = moo.compile({
     type : moo.keywords({
       feature : 'Feature',
       examples : ['Examples','Scenarios'],
-      step : ['Given','When','Then','And','But'],
+      given : 'Given',
+      when : 'When',
+      then : 'Then',
+      repeatStep : ['And','But'],
       example : ['Example','Scenario'],
       background : 'Background',
       rule : 'Rule',
@@ -31,8 +34,18 @@ const trimWhitespace = (cols,str) => {
   const lines = str.split('\n').slice(0,-1);
   return fp.reduce((s,line) => {
     return s+line.slice(cols)+'\n'
-},'')(lines);
+  },'')(lines);
 };
+
+const setRepeatStepTypesReducer = (steps,step) => {
+    if (!fp.has('type.type',step)) {
+        step = fp.set('type.type',fp.last(steps).type.type,step);
+    }
+    return fp.concat(steps,step);
+};
+
+const setRepeatStepTypes = (steps) => fp.reduce(setRepeatStepTypesReducer,[],steps);
+
 %}
 
 @lexer lexer
@@ -124,10 +137,11 @@ escapedColumnCharaters -> %escapedPipe {% data => '|' %}
   | %escapedBackSlash {% data => '\\' %}
   | %escapedNewline {% data => '\n' %}
 
-steps -> step moreSteps {% data => fp.concat(data[0],data[1]) %}
+steps -> step moreSteps {% data => setRepeatStepTypes(fp.concat(data[0],data[1])) %}
 
 moreSteps -> null {% data => [] %}
   | moreSteps step {% data => fp.concat(data[0],data[1]) %}
+  | moreSteps repeatStep {% data => fp.concat(data[0],data[1]) %}
   | moreSteps %emptyLine {% data => data[0] %}
 
 step -> stepStatement
@@ -136,7 +150,19 @@ step -> stepStatement
 
 stepStatement -> _ stepKeyword text %newline {% data => { return { type : data[1], text : data[2].trim() } } %}
 
-stepKeyword -> %step {% (data) => { return { type : 'step', name : data[0].value } } %}
+stepKeyword -> %given {% (data) => { return { type : 'given', name : data[0].value } } %}
+  | %when {% (data) => { return { type : 'when', name : data[0].value } } %}
+  | %then {% (data) => { return { type : 'then', name : data[0].value } } %}
+
+repeatStep -> repeatStepStatement
+  | repeatStepStatement dataTable {% data => fp.set('dataTable',data[1],data[0]) %}
+  | repeatStepStatement docString {% data => fp.set('docString',data[1],data[0]) %}
+
+repeatStepStatement -> _ repeatStepKeyword text %newline {%
+  data => { return { type : data[1], text : data[2].trim() } }
+%}
+
+repeatStepKeyword -> %repeatStep {% (data) => { return { name : data[0].value } } %}
 
 text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}
@@ -147,7 +173,10 @@ text -> null {% data => '' %}
   | text %escapedNewline {% data => data[0]+data[1].value %}
   | text %escapedBackSlash {% data => data[0]+data[1].value %}
 
-keywords -> %step {% data => data[0].value %}
+keywords -> %given {% data => data[0].value %}
+  | %when {% data => data[0].value %}
+  | %then {% data => data[0].value %}
+  | %repeatStep {% data => data[0].value %}
   | %colon {% data => data[0].value %}
   | %example {% data => data[0].value %}
   | %examples {% data => data[0].value %}
