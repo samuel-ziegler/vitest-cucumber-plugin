@@ -1,3 +1,4 @@
+* v0.5.2 : Throw an error if a step file import fails instead of logging it
 * v0.5.1 : Added info level logging for tracing state through steps.  Also added a log file option.
 * v0.5.0 : Implemented Doc Strings.  Plugin is now feature complete.
 * v0.1.8 : Implemented Rule keyword
