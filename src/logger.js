@@ -1,7 +1,14 @@
+import _ from 'lodash/fp.js';
 import pino from 'pino';
 
-export const log = pino();
+export var log = pino();
 
 log.level = 'warn';
 
-export const setLogLevel = (logLevel) => { log.level = logLevel };
+export const logConfig = (config) => {
+    if (_.has('file',config)) {
+        log = pino(config,config.file);
+    } else {
+        log = pino(config);
+    }
+};

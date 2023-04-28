@@ -11,6 +11,16 @@ const allHooks = {
     afterStep : [],
 };
 
+const hookNames = {
+    beforeAll : 'BeforeAll',
+    before : 'Before',
+    beforeStep : 'BeforeStep',
+    afterAll : 'AfterAll',
+    after : 'After',
+    afterStep : 'AfterStep',
+}
+    
+
 const applyHooks = async (hooksName,state,tags) => {
     const hooks = allHooks[hooksName];
     log.debug('applyHooks: '+hooksName+' state: '+JSON.stringify(state));
@@ -23,8 +33,10 @@ const applyHooks = async (hooksName,state,tags) => {
         
         log.debug('applyHooks match? '+result+' tags: '+JSON.stringify(tags));
         if (result) {
+            const origState = state;
             state = await hook.f(state);
-            log.debug('applyHooks name: '+hook.name+' new state: '+JSON.stringify(state));
+            log.info(hookNames[hooksName]+'(\''+hook.name+'\') ('+JSON.stringify(origState)+') => '+
+                     JSON.stringify(state));
         }
     }
     return state;
