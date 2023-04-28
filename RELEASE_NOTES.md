@@ -1,3 +1,4 @@
+* v0.5.1 : Added info level logging for tracing state through steps.  Also added a log file option.
 * v0.5.0 : Implemented Doc Strings.  Plugin is now feature complete.
 * v0.1.8 : Implemented Rule keyword
 * v0.1.7 : Implemented Hooks API
