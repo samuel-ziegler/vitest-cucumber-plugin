@@ -132,6 +132,7 @@ dataTableColumnText -> null {% data => '' %}
   | dataTableColumnText keywords {% data => data[0]+data[1] %}
   | dataTableColumnText %word {% data => data[0]+data[1].value %}
   | dataTableColumnText %ws {% data => data[0]+data[1].value %}
+  | dataTableColumnText %at {% data => data[0]+data[1].value %}
 
 escapedColumnCharaters -> %escapedPipe {% data => '|' %}
   | %escapedBackSlash {% data => '\\' %}
@@ -168,6 +169,7 @@ text -> null {% data => '' %}
   | text %word {% data => data[0]+data[1].value %}
   | text %ws {% data => data[0]+data[1].value %}
   | text keywords {% data => data[0]+data[1] %}
+  | text %at {% data => data[0]+data[1].value %}
   | text %pipe {% data => data[0]+data[1].value %}
   | text %escapedPipe {% data => data[0]+data[1].value %}
   | text %escapedNewline {% data => data[0]+data[1].value %}
