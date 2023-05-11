@@ -1,3 +1,4 @@
+* v0.5.6 : Fixed issue #25 which was preventing at symbols from being used in data tables
 * v0.5.5 : Changed dynamic import statements to static ones so that Vitest watch works correctly
 * v0.5.4 : Added vue test
 * v0.5.3 : Provide code snippets when a step definition is not found
