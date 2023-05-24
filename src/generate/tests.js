@@ -21,7 +21,7 @@ ${indent}    afterEach(async () => { state = await applyAfterStepHooks(state,${t
 
         const stepString = JSON.stringify(parameterizedStep);
         tests = tests+`
-${indent}    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
+${indent}    test('${escape(step.type.name)} ${escape(name)}', async () => { state = await Test(state,${stepString}); });`;
     },steps);
 
     return tests;

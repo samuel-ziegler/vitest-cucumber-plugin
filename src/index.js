@@ -41,19 +41,19 @@ export const Given = addStepDefinition;
 export const When = addStepDefinition;
 export const Then = addStepDefinition;
 
-export const Test = (state,step) => {
+export const Test = async (state,step) => {
     log.debug('Test step: '+JSON.stringify(step)+' state:'+JSON.stringify(state));
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
     const extraData = step.dataTable ? step.dataTable : (step.docString ? step.docString.text : null );
 
-    const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
+    const newState = await stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
     log.info(step.type.name+'(\''+stepDefinitionMatch.stepDefinition.expression+'\') ('+
              JSON.stringify(state)+','+JSON.stringify(stepDefinitionMatch.parameters)+','+JSON.stringify(extraData)+
              ') => '+JSON.stringify(newState));
     log.debug('Test newState: '+JSON.stringify(newState));
 
-    return newState;
+    return newState ?? state;
 };
 
 export const DataTable = (dataTable) => {
