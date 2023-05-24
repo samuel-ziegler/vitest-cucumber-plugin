@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "@types/lodash": "^4.14.194",
+    "lodash": "^4.17.21",
+    "typescript": "^5.0.4",
+    "vitest": "^0.30.1"
+  },
+  "scripts": {
+    "test": "npx vitest run",
+    "postinstall": "ln -s ../../.. node_modules/vitest-cucumber-plugin"
+  }
+}
