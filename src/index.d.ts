@@ -68,3 +68,13 @@ export function After<State>(options: {name: string}, fn: () => State | Promise<
 export function AfterStep<State>(fn: () => State | Promise<State>): void;
 export function AfterStep<State>(name: string, fn: () => State | Promise<State>): void;
 export function AfterStep<State>(options: {name: string}, fn: () => State | Promise<State>): void;
+
+// Vitest plugin
+
+interface Plugin {
+  name: string;
+  configResolved(config: any): void;
+  transform(src: string, id: string): Promise<void | string>;
+}
+
+export default function vitestCucumberPlugin(): Plugin;
