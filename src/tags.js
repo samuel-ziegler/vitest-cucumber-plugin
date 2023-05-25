@@ -8,7 +8,7 @@ const parseTagsExpression = (tagsExpression) => {
 
     tagsExpression += '\n';
     parser.feed(tagsExpression);
-    log.debug('parseTagsExpression expression: \''+tagsExpression+'\' results: '+JSON.stringify(parser.results));
+    log.debug({ results: parser.results }, `parseTagsExpression expression: '${tagsExpression}'`);
 
     if (parser.results.length == 0) {
         throw new Error('Unexpected end of expression');
@@ -23,10 +23,10 @@ const parseTagsExpression = (tagsExpression) => {
 
 const createFunction = (e) => {
     if (_.isString(e)) {
-        log.debug('createFunction tag: '+e);
+        log.debug(`createFunction tag: ${e}`);
         return (tags) => {
             const result = _.find((tag) => tag == e,tags);
-            log.debug('tagsExpression tag: '+e+' tags: '+JSON.stringify(tags)+' match? '+result);
+            log.debug(`tagsExpression tag: ${e} tags: ${JSON.stringify(tags)} match? ${result}`);
             return result;
         }
     }
@@ -36,12 +36,12 @@ const createFunction = (e) => {
     }
 
     if (e.operator == 'not') {
-        log.debug('createFunction not '+JSON.stringify(e.expression));
+        log.debug(`createFunction not ${JSON.stringify(e.expression)}`);
         const f = createFunction(e.expression);
         return (tags) => !f(tags);
     }
 
-    log.debug('createFunction '+JSON.stringify(e.left)+' '+e.operator+' '+JSON.stringify(e.right));
+    log.debug(`createFunction ${JSON.stringify(e.left)} ${e.operator} ${JSON.stringify(e.right)}`);
     const l = createFunction(e.left);
     const r = createFunction(e.right);
     

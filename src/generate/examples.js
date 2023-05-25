@@ -17,7 +17,7 @@ const createParameterMap = (parameters,values) => {
 const generateAllTests = (steps,parameters,parameterValues,tags) => {
     const allTests = _.reduce((allTests,values) => {
         const parameterMap = createParameterMap(parameters,values);
-        log.debug('parameterMap : '+JSON.stringify(parameterMap));
+        log.debug(`parameterMap : ${JSON.stringify(parameterMap)}`);
 
         const tests = generateTests(steps,parameterMap,tags,'    ');
 
@@ -30,13 +30,12 @@ const generateAllTests = (steps,parameters,parameterValues,tags) => {
 }
 
 export const generateExamples = (config,steps,examplesStatement) => {
-    log.debug('generateExamples steps:'+JSON.stringify(steps)+' examples: '+JSON.stringify(examplesStatement));
+    log.debug(`generateExamples steps:${JSON.stringify(steps)} examples: ${JSON.stringify(examplesStatement)}`);
 
     const parameters = _.head(examplesStatement.dataTable);
     const parameterValues = _.tail(examplesStatement.dataTable);
 
-    log.debug('generateExamples parameters:'+JSON.stringify(parameters)+' parameterValues: '+
-              JSON.stringify(parameterValues));
+    log.debug(`generateExamples parameters:${JSON.stringify(parameters)} parameterValues: ${JSON.stringify(parameterValues)}`);
 
     const skip = shouldSkip(config,examplesStatement.tags) ? '.skip' : '';
 

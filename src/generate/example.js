@@ -4,7 +4,7 @@ import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
 
 export const generateExample = (config,example) => {
-    log.debug('generateExample config: '+JSON.stringify(config)+' example: '+JSON.stringify(example));
+    log.debug(`generateExample config: ${JSON.stringify(config)} example: ${JSON.stringify(example)}`);
     var tests = '';
 
     const steps = _.has('background.steps',example) ? _.concat(example.background.steps,example.steps) : example.steps;
