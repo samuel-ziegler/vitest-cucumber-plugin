@@ -4,32 +4,34 @@ Plugin for [Vitest](https://vitest.dev/) to allow tests to be written in [Cucumb
 
 ## Installation
 
-```
-$ npm install --save-dev vitest-cucumber-plugin
+```bash
+npm install --save-dev vitest-cucumber-plugin
 ```
 
 ## Usage
 
-
 ### vite.config.js
 
-Import the plugin then add it to the plugins array.  Change test.inclue to look for .feature files.
+Import the plugin then add it to the plugins array.  Change `test.include` to look for `.feature` files.
 
-```
+```js
 import { defineConfig } from 'vitest/config'
 import vitestCucumberPlugin from 'vitest-cucumber-plugin';
 
+// Optional plugin configuration
+const options = {
+  stepDefinitionsPattern : 'features/**/*.js', // the default (relative to the Vite config root option)
+  tags : '<tags boolean expression>', // Use this to filter the test via boolean tags expression
+  log : { 
+    level : '<"fatal", "error", "warn", "info", "debug", "trace" or "silent">',
+    file : '<log path>', // Write the logs to a file instead of stdio (the default)
+  }
+}
+
 export default defineConfig({
-    plugins: [vitestCucumberPlugin()],
+    plugins: [vitestCucumberPlugin(options)],
     test: {
         include : [ '**/*.feature' ],
-        cucumber : {
-           tags : "<tags boolean expression>", // Use this to filter the test via boolean tags expression
-           log : { 
-              level : "<'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'>",
-              file : "<log path>", // Write the logs to a file instead of stdio (the default)
-           }
-        }
     },
 })
 ```
@@ -39,7 +41,7 @@ the steps.  You can pipe the logs through pino-pretty to make them more human re
 
 ### Writing tests
 
-Put feature files into the 'features/' directory and step definitions into the 'features/step_definitions/' directory.
+Put feature files somewhere that matches your glob pattern in `test.include`. Step definitions are fetched from `features/**/*.js` by default, the pattern can be configured using the `stepDefinitionsPattern` option for the plugin function.
 
 See below for the differences between tests written for Cucumber and for this plugin.
 
@@ -61,7 +63,8 @@ second is an array of parameters values.  The third is a data table or a doc str
 return a new state object which is passed to the next step definition in the chain.
 
 For example, here is how you'd write step definitions in Cucumber:
-```
+
+```js
 const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
@@ -87,7 +90,8 @@ Then('I should be told {string}', function (expectedAnswer, dataTable) {
 ```
 
 Here is how you'd write the same step functions in this plugin:
-```
+
+```js
 import { Given, When, Then } from 'vitest-cucumber-plugin';
 import _ from 'lodash/fp.js';
 import { expect } from 'vitest'

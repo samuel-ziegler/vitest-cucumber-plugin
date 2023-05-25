@@ -16,10 +16,10 @@ import {
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS = async (config,featureSrc) => {
+const compileFeatureToJS = async (config, featurePath, featureSrc) => {
     const feature = parse(featureSrc);
 
-    const code = await generateFeature(config,feature);
+    const code = await generateFeature(config, featurePath, feature);
 
     return code;
 }
@@ -61,14 +61,13 @@ export const DataTable = (dataTable) => {
     return _.map((row) => _.zipObject(parameters,row))(rows);
 }
 
-export default function vitestCucumberPlugin() {
+export default function vitestCucumberPlugin(options = {}) {
     let config;
     
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' } },
-                                _.get('test.cucumber',resolvedConfig))
+            config = _.defaults({ root : resolvedConfig.root, stepDefinitionsPattern: 'features/**/*.js', log : { level : 'warn' } }, options)
             logConfig(config.log);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
@@ -77,7 +76,7 @@ export default function vitestCucumberPlugin() {
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
-                const code = await compileFeatureToJS(config,src);
+                const code = await compileFeatureToJS(config, id, src);
 
                 log.debug(`transform ${id} -> ${code}`);
 
