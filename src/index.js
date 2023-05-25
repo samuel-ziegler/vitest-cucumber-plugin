@@ -53,7 +53,7 @@ export const Test = async (state,step) => {
              ') => '+JSON.stringify(newState));
     log.debug('Test newState: '+JSON.stringify(newState));
 
-    return newState ?? state;
+    return newState;
 };
 
 export const DataTable = (dataTable) => {

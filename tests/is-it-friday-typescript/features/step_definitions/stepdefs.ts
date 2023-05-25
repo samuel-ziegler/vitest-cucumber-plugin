@@ -26,4 +26,6 @@ Then('I should be told {string}', async function (state: State, [answer]) {
   await sleep(10);
 
   expect(state.answer).toBe(answer);
+
+  return state;
 });

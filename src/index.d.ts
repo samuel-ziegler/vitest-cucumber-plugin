@@ -42,11 +42,17 @@ type _Match<
 
 type Match<T extends string> = _Match<T, []>;
 
+type DocTextOrDataTable = string | string[][];
+
 // Steps
 
-export function Given<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>) => State | Promise<State>): void;
-export function When<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>) => State | Promise<State>): void;
-export function Then<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>) => State | Promise<State> | void | Promise<void>): void;
+export function Given<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>, data?: DocTextOrDataTable) => State | Promise<State>): void;
+export function When<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>, data?: DocTextOrDataTable) => State | Promise<State>): void;
+export function Then<State, Pattern extends string>(pattern: Pattern, fn: (state: State, args: Match<Pattern>, data?: DocTextOrDataTable) => State | Promise<State>): void;
+
+// Utils
+
+export function DataTable(data: string[][]): Record<string, string>[];
 
 // Hooks
 

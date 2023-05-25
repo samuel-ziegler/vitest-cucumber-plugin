@@ -34,7 +34,7 @@ const applyHooks = async (hooksName,state,tags) => {
         log.debug('applyHooks match? '+result+' tags: '+JSON.stringify(tags));
         if (result) {
             const origState = state;
-            state = (await hook.f(state)) ?? origState;
+            state = await hook.f(state);
             log.info(hookNames[hooksName]+'(\''+hook.name+'\') ('+JSON.stringify(origState)+') => '+
                      JSON.stringify(state));
         }
