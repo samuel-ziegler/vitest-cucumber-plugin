@@ -1,14 +1,16 @@
+import path from 'node:path';
 import _ from 'lodash/fp.js';
 import { log } from '../logger.js';
 import { generateExample, generateScenarioOutline, generateRule } from './index.js';
 import { escape, shouldSkip } from './util.js';
 import { glob } from 'glob';
 
-const findJsFiles = async (pattern, cwd) => glob(pattern, {cwd});
+const findJsFiles = async (pattern, cwd) => glob(pattern, {cwd, absolute: true});
 
-export const generateFeature = async (config,feature) => {
+export const generateFeature = async (config, featurePath, feature) => {
     const name = feature.name;
     const statements = feature.statements;
+    const featureDir = path.dirname(featurePath);
 
     const testStatements = _.reduce((testStatements,statement) => {
         if (feature.background) {
@@ -31,9 +33,9 @@ export const generateFeature = async (config,feature) => {
     const tagsStr = JSON.stringify(feature.tags);
 
     const jsFilesImportReducer = (imports,file) => {
-        file = file.slice('features/'.length);
+        file = path.relative(featureDir, file);
         return imports+`
-import './${file}';`;
+import '${file.startsWith('.') ? file : `./${file}`}';`;
     };
     const jsFiles = await findJsFiles(config.stepDefinitionsPattern, config.root);
     const jsFilesImport = _.reduce(jsFilesImportReducer,'',jsFiles);
