@@ -1,5 +1,5 @@
-import require$$0 from 'lodash/fp.js';
-import require$$1 from 'moo';
+import require$$0$1 from 'lodash/fp.js';
+import require$$0 from 'moo';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -7,41 +7,54 @@ function getDefaultExportFromCjs (x) {
 
 var gherkin_umd$1 = {exports: {}};
 
+const moo = require$$0;
+
+let lexer = moo.compile({
+    emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
+    newline : { match : '\n', lineBreaks : true },
+    ws : /[ \t]+/,
+    at : '@',
+    colon : ':',
+    repeatStep : '*',
+    pipe : '|',
+    escapedPipe : '\\|',
+    escapedNewline : '\\n',
+    escapedBackSlash : '\\\\',
+    scenarioOutline : ['Scenario Outline','Scenario Template'],
+    docString : ['```','"""'],
+    word : {
+        match : /[^ \t\n\:\|\@\*]+/,
+        type : moo.keywords({
+            feature : 'Feature',
+            examples : ['Examples','Scenarios'],
+            given : 'Given',
+            when : 'When',
+            then : 'Then',
+            repeatStep : ['And','But'],
+            example : ['Example','Scenario'],
+            background : 'Background',
+            rule : 'Rule',
+        }),
+    },
+});
+
+const config = (options) => {
+};
+
+var gherkinLexer = {
+    lexer : () => lexer,
+    config,
+};
+
 (function (module) {
 	// Generated automatically by nearley, version 2.20.1
 	// http://github.com/Hardmath123/nearley
 	(function () {
 
-	const fp = require$$0;
-	const moo = require$$1;
-	const lexer = moo.compile({
-	  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
-	  newline : { match : '\n', lineBreaks : true },
-	  ws : /[ \t]+/,
-	  at : '@',
-	  colon : ':',
-	  repeatStep : '*',
-	  pipe : '|',
-	  escapedPipe : '\\|',
-	  escapedNewline : '\\n',
-	  escapedBackSlash : '\\\\',
-	  scenarioOutline : ['Scenario Outline','Scenario Template'],
-	  docString : ['```','"""'],
-	  word : {
-	    match : /[^ \t\n\:\|\@\*]+/,
-	    type : moo.keywords({
-	      feature : 'Feature',
-	      examples : ['Examples','Scenarios'],
-	      given : 'Given',
-	      when : 'When',
-	      then : 'Then',
-	      repeatStep : ['And','But'],
-	      example : ['Example','Scenario'],
-	      background : 'Background',
-	      rule : 'Rule',
-	    }),
-	  },
-	});
+	const fp = require$$0$1;
+
+	const gherkinLexer$1 = gherkinLexer;
+	const lexer = gherkinLexer$1.lexer();
 
 	const trimWhitespace = (cols,str) => {
 	  const lines = str.split('\n').slice(0,-1);

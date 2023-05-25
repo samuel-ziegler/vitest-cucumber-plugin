@@ -13,11 +13,12 @@ import {
     BeforeStep, applyBeforeStepHooks,
     AfterStep, applyAfterStepHooks,
 } from './hooks.js';
+import gherkinLexer from './gherkin-lexer.cjs';
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS = async (config,featureSrc) => {
-    const feature = parse(featureSrc);
+const compileFeatureToJS = async (config,parser,featureSrc) => {
+    const feature = parse(parser,featureSrc);
 
     const code = await generateFeature(config,feature);
 
@@ -63,17 +64,20 @@ export const DataTable = (dataTable) => {
 
 export default function vitestCucumberPlugin() {
     let config;
+    let parser;
     
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' } },
+            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' }, lang : 'en' },
                                 _.get('test.cucumber',resolvedConfig))
             logConfig(config.log);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
 
             log.debug({ config }, 'config');
+
+            gherkinLexer.config(config);
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
