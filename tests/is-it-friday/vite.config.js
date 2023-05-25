@@ -4,10 +4,9 @@ import vitestCucumberPlugin from 'vitest-cucumber-plugin';
 export default defineConfig(({ mode }) => {
     const level = (mode === 'test-debug') ? 'info' : 'warn';
     return {
-        plugins: [vitestCucumberPlugin()],
+        plugins: [vitestCucumberPlugin({ log : { level } })],
         test: {
             include : [ '**/*.feature' ],
-            cucumber : { log : { level } },
         },
     }
 });

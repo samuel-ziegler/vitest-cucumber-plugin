@@ -5,10 +5,9 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig(({ mode }) => {
     const level = (mode === 'test-debug') ? 'debug' : 'warn';
     return {
-        plugins: [vue(),vitestCucumberPlugin()],
+        plugins: [vue(), vitestCucumberPlugin({ log : { level } })],
         test: {
             include : [ '**/*.feature' ],
-            cucumber : { log : { level } },
             environment : 'jsdom',
         },
     }

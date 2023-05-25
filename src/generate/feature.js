@@ -4,7 +4,7 @@ import { generateExample, generateScenarioOutline, generateRule } from './index.
 import { escape, shouldSkip } from './util.js';
 import { glob } from 'glob';
 
-const findJsFiles = async () => glob('features/**/*.js');
+const findJsFiles = async (pattern, cwd) => glob(pattern, {cwd});
 
 export const generateFeature = async (config,feature) => {
     const name = feature.name;
@@ -35,7 +35,7 @@ export const generateFeature = async (config,feature) => {
         return imports+`
 import './${file}';`;
     };
-    const jsFiles = await findJsFiles();
+    const jsFiles = await findJsFiles(config.stepDefinitionsPattern, config.root);
     const jsFilesImport = _.reduce(jsFilesImportReducer,'',jsFiles);
 
     const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
