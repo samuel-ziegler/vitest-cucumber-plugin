@@ -5,13 +5,13 @@ import { log } from './logger.js';
 export const parse = (src) => {
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
 
-    log.debug('parsing src: '+src);
+    log.debug(`parsing src: ${src}`);
     parser.feed(src);
 
     if (parser.results.length == 0) {
         throw new Error('Unexpected end of file');
     }
-    log.debug('parsing result: '+JSON.stringify(parser.results));
+    log.debug({ results: parser.results }, 'parsing result');
     if (parser.results.length > 1) {
         throw new Error('Ambiguous parsing: '+parser.results.length);
     }

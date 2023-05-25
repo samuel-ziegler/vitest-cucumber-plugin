@@ -42,16 +42,14 @@ export const When = addStepDefinition;
 export const Then = addStepDefinition;
 
 export const Test = (state,step) => {
-    log.debug('Test step: '+JSON.stringify(step)+' state:'+JSON.stringify(state));
+    log.debug({ step, state }, 'Test step');
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
     const extraData = step.dataTable ? step.dataTable : (step.docString ? step.docString.text : null );
 
     const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
-    log.info(step.type.name+'(\''+stepDefinitionMatch.stepDefinition.expression+'\') ('+
-             JSON.stringify(state)+','+JSON.stringify(stepDefinitionMatch.parameters)+','+JSON.stringify(extraData)+
-             ') => '+JSON.stringify(newState));
-    log.debug('Test newState: '+JSON.stringify(newState));
+    log.info({ state, newState, extraData, parameters: stepDefinitionMatch.parameters }, `${step.type.name}('${stepDefinitionMatch.stepDefinition.expression}')`);
+    log.debug({ newState }, 'Test newState');
 
     return newState;
 };
@@ -75,13 +73,13 @@ export default function vitestCucumberPlugin() {
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
 
-            log.debug('config: '+JSON.stringify(config));
+            log.debug({ config }, 'config');
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
                 const code = await compileFeatureToJS(config,src);
 
-                log.debug('transform '+id+' -> '+code);
+                log.debug(`transform ${id} -> ${code}`);
 
                 return {
                     code

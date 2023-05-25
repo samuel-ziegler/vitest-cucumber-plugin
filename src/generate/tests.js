@@ -4,7 +4,7 @@ import { parameterizeText } from '../parameterize.js';
 import { log } from '../logger.js';
 
 export const generateTests = (steps,parameterMap,tags,extraIndent) => {
-    log.debug('generateTests steps : '+JSON.stringify(steps));
+    log.debug(`generateTests steps : ${JSON.stringify(steps)}`);
     const tagsStr = JSON.stringify(tags);
     const indent = extraIndent ? extraIndent : '';
     let tests = `

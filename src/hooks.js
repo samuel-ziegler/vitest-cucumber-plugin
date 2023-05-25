@@ -23,11 +23,11 @@ const hookNames = {
 
 const applyHooks = async (hooksName,state,tags) => {
     const hooks = allHooks[hooksName];
-    log.debug('applyHooks: '+hooksName+' state: '+JSON.stringify(state));
+    log.debug({ state }, `applyHooks: ${hooksName}`);
     for (let i = 0; i < hooks.length; i++) {
         let hook = hooks[i];
         
-        log.debug('applyHooks name: '+hook.name+' state: '+JSON.stringify(state));
+        log.debug({ state }, `applyHooks name: ${hook.name}`);
         
         const result = hook.tagsFunction(tags);
         
@@ -35,8 +35,7 @@ const applyHooks = async (hooksName,state,tags) => {
         if (result) {
             const origState = state;
             state = await hook.f(state);
-            log.info(hookNames[hooksName]+'(\''+hook.name+'\') ('+JSON.stringify(origState)+') => '+
-                     JSON.stringify(state));
+            log.info({ state, origState }, `${hookNames[hooksName]}('${hook.name}')`);
         }
     }
     return state;
@@ -55,7 +54,7 @@ const addHook = (hooksName,opts,f) => {
 
     opts = _.set('tagsFunction',tagsFunction(opts.tags),opts);
     
-    log.debug('addHook hooksName: '+hooksName+' name: '+opts.name);
+    log.debug(`addHook hooksName: ${hooksName} name: ${opts.name}`);
     allHooks[hooksName] = _.concat(allHooks[hooksName],opts);
 };
 
