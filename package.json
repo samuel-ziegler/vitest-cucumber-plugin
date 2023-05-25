@@ -13,7 +13,11 @@
     },
     "license": "MIT",
     "main": "src/index.js",
+    "types": "src/index.d.ts",
     "type": "module",
+    "files": [
+        "src"
+    ],
     "scripts": {
         "nearley": "./generate-parsers",
         "test": "./run-tests"

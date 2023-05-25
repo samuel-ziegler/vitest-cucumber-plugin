@@ -4,7 +4,7 @@ import { generateExample, generateScenarioOutline, generateRule } from './index.
 import { escape, shouldSkip } from './util.js';
 import { glob } from 'glob';
 
-const findJsFiles = async () => glob('features/**/*.js');
+const findJsFiles = async () => glob('features/**/*.[jt]s');
 
 export const generateFeature = async (config,feature) => {
     const name = feature.name;
@@ -31,6 +31,10 @@ export const generateFeature = async (config,feature) => {
     const tagsStr = JSON.stringify(feature.tags);
 
     const jsFilesImportReducer = (imports,file) => {
+        if (file.endsWith('.d.ts')) {
+            return imports;
+        }
+
         file = file.slice('features/'.length);
         return imports+`
 import './${file}';`;
