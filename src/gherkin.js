@@ -18,10 +18,11 @@ var gherkin_umd$1 = {exports: {}};
 
 	const gherkinLexerShared = require$$2;
 
-	const transformKeywords = (states) => fp.mapValues((state) =>
-	    fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state))(states);
+	const transformKeywords = (state) => fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state);
 
-	gherkinLexerShared.states = transformKeywords(gherkinLexerShared.states);
+	const transformStates = (states) => fp.mapValues(transformKeywords)(states);
+
+	gherkinLexerShared.states = transformStates(gherkinLexerShared.states);
 
 	const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
@@ -145,7 +146,7 @@ var gherkin_umd$1 = {exports: {}};
 	    {"name": "keywords", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("repeatStep") ? {type: "repeatStep"} : repeatStep)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0].value},
-	    {"name": "keywords", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("background") ? {type: "background"} : background)], "postprocess": data => data[0].value},

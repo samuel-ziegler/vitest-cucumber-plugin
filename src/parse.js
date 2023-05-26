@@ -1,17 +1,17 @@
 import nearley from 'nearley';
 import { log } from './logger.js';
 
-let parserSingleton;
+let gherkinSingleton;
 
 const parser = async () => {
-    if (!parserSingleton) {
+    if (!gherkinSingleton) {
         // Need to dynamicly load the gherkin parser because it needs to be loaded after the
         // magic globals are set up.  Pretty lame, I know.
-        const { default : gherkin } = await import('./gherkin.js');
-        parserSingleton = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
+        const gherkinImport = await import('./gherkin.js');
+        gherkinSingleton = gherkinImport['default'];
     }
 
-    return parserSingleton;
+    return new nearley.Parser(nearley.Grammar.fromCompiled(gherkinSingleton));
 };
 
 export const parse = async (src) => {

@@ -4,10 +4,11 @@ const moo = require('moo');
 
 const gherkinLexerShared = require('./gherkin-lexer-shared.cjs');
 
-const transformKeywords = (states) => fp.mapValues((state) =>
-    fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state))(states);
+const transformKeywords = (state) => fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state);
 
-gherkinLexerShared.states = transformKeywords(gherkinLexerShared.states);
+const transformStates = (states) => fp.mapValues(transformKeywords)(states);
+
+gherkinLexerShared.states = transformStates(gherkinLexerShared.states);
 
 const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
@@ -161,7 +162,7 @@ keywords -> %given {% data => data[0].value %}
   | %then {% data => data[0].value %}
   | %repeatStep {% data => data[0].value %}
   | %colon {% data => data[0].value %}
-  | %example {% data => data[0].value %}
+  | %scenario {% data => data[0].value %}
   | %examples {% data => data[0].value %}
   | %scenarioOutline {% data => data[0].value %}
   | %background {% data => data[0].value %}

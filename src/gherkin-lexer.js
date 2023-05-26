@@ -13,6 +13,7 @@ const base = {
     escapedPipe : '\\|',
     escapedNewline : '\\n',
     escapedBackSlash : '\\\\',
+    scenarioOutline : [],
     docString : ['```','"""'],
     word : {
         match : /[^ \t\n\:\|\@\*]+/,
