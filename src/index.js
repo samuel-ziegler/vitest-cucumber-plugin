@@ -69,7 +69,7 @@ export default function vitestCucumberPlugin() {
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' }, lang : 'en' },
+            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' }, language : 'en' },
                                 _.get('test.cucumber',resolvedConfig))
             logConfig(config.log);
 
