@@ -1,8 +1,15 @@
 @{%
 const fp = require('lodash/fp.js');
+const moo = require('moo');
 
-const gherkinLexer = require('./gherkin-lexer.cjs');
-const lexer = gherkinLexer.lexer();
+const gherkinLexerShared = require('./gherkin-lexer-shared.cjs');
+
+const transformKeywords = (states) => fp.mapValues((state) =>
+    fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state))(states);
+
+gherkinLexerShared.states = transformKeywords(gherkinLexerShared.states);
+
+const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
 const trimWhitespace = (cols,str) => {
   const lines = str.split('\n').slice(0,-1);
@@ -61,7 +68,7 @@ example -> tags exampleStatement steps {% (data) => fp.assign(data[1],{ tags : d
 exampleStatement -> _ exampleKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 %}
-exampleKeyword -> %example {% data => data[0].value %}
+exampleKeyword -> %scenario {% data => data[0].value %}
 
 exampleList -> null {% data => [] %}
   | exampleList example {% data => fp.concat(data[0],data[1]) %}

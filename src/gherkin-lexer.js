@@ -1,6 +1,6 @@
-const moo = require('moo');
-const _ = require('lodash/fp.js');
-const gherkinLanguages = require('./gherkin-languages.json');
+import _ from 'lodash/fp.js';
+import gherkinLexerShared from './gherkin-lexer-shared.cjs';
+import fs from 'fs';
 
 const base = {
     emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
@@ -19,8 +19,6 @@ const base = {
     },
 };
 
-let lexer;
-
 const trimKeywords = (keywords) => _.map(_.trim);
 const filterStars = (keywords) => _.filter((v) => (v !== '*'));
 const cleanKeywords = (keywords) => filterStars()(trimKeywords()(keywords));
@@ -38,17 +36,19 @@ const createState = (languageKeywords) => {
     const repeatStepKeywords = _.reduce(repeatStepReducer,[])(repeatStepKeys);
     
     let otherKeys = ['feature','examples','given','when','then','scenario','background','rule'];
-    const otherKeyReducer = (acc,key) => _.set(key,cleanKeywords(languageKeywords),acc);
+    const otherKeyReducer = (acc,key) => _.set(key,cleanKeywords(languageKeywords[key]),acc);
     const otherKeywords = _.reduce(otherKeyReducer,{})(otherKeys);
 
     keywords = _.set('repeatStep',repeatStepKeywords,otherKeywords);
 
-    state = _.set(['word','type'],moo.keywords(keywords),state);
+    state = _.set(['word','rawKeywords'],keywords,state);
 
     return state;
 }
 
-const config = (options) => {
+export const gherkinLexerConfig = (options) => {
+    const gherkinLanguagesPath = new URL('./gherkin-languages.json', import.meta.url);
+    const gherkinLanguages = JSON.parse(fs.readFileSync(gherkinLanguagesPath));
     const language = _.getOr('en','language',options);
     const languageKeys = _.keys(gherkinLanguages);
     const languageKeyReducer = (acc,languageKey) => _.set(languageKey,createState(gherkinLanguages[languageKey]),acc);
@@ -56,11 +56,6 @@ const config = (options) => {
     if (!_.has(language,states)) {
         throw new Error('unknown language "'+language+'"');
     }
-    const startState = _.get(language,states);
-    lexer = moo.compile(states,startState);
-};
-
-module.exports = {
-    lexer : () => lexer,
-    config,
+    gherkinLexerShared.states = states;
+    gherkinLexerShared.language = language;
 };

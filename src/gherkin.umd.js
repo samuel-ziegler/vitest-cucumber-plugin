@@ -4,9 +4,16 @@
 function id(x) { return x[0]; }
 
 const fp = require('lodash/fp.js');
+const moo = require('moo');
 
-const gherkinLexer = require('./gherkin-lexer.cjs');
-const lexer = gherkinLexer.lexer();
+const gherkinLexerShared = require('./gherkin-lexer-shared.cjs');
+
+const transformKeywords = (states) => fp.mapValues((state) =>
+    fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state))(states);
+
+gherkinLexerShared.states = transformKeywords(gherkinLexerShared.states);
+
+const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
 const trimWhitespace = (cols,str) => {
   const lines = str.split('\n').slice(0,-1);
@@ -55,7 +62,7 @@ var grammar = {
     {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
         (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
         },
-    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+    {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
     {"name": "exampleList", "symbols": [], "postprocess": data => []},
     {"name": "exampleList", "symbols": ["exampleList", "example"], "postprocess": data => fp.concat(data[0],data[1])},
     {"name": "scenarioOutline", "symbols": ["tags", "scenarioOutlineStatement", "steps", "examplesList"], "postprocess": 

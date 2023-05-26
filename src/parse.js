@@ -1,21 +1,32 @@
 import nearley from 'nearley';
-import gherkin from './gherkin.js';
 import { log } from './logger.js';
 
-export const parse = (src) => {
-    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
+let parserSingleton;
 
+const parser = async () => {
+    if (!parserSingleton) {
+        // Need to dynamicly load the gherkin parser because it needs to be loaded after the
+        // magic globals are set up.  Pretty lame, I know.
+        const { default : gherkin } = await import('./gherkin.js');
+        parserSingleton = new nearley.Parser(nearley.Grammar.fromCompiled(gherkin));
+    }
+
+    return parserSingleton;
+};
+
+export const parse = async (src) => {
+    const myParser = await parser();
     log.debug(`parsing src: ${src}`);
-    parser.feed(src);
+    myParser.feed(src);
 
-    if (parser.results.length == 0) {
+    if (myParser.results.length == 0) {
         throw new Error('Unexpected end of file');
     }
-    log.debug({ results: parser.results }, 'parsing result');
-    if (parser.results.length > 1) {
-        throw new Error('Ambiguous parsing: '+parser.results.length);
+    log.debug({ results: myParser.results }, 'parsing result');
+    if (myParser.results.length > 1) {
+        throw new Error('Ambiguous parsing: '+myParser.results.length);
     }
     
-    const results = parser.results;
+    const results = myParser.results;
     return results[0];
 }

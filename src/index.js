@@ -13,12 +13,12 @@ import {
     BeforeStep, applyBeforeStepHooks,
     AfterStep, applyAfterStepHooks,
 } from './hooks.js';
-import gherkinLexer from './gherkin-lexer.cjs';
+import { gherkinLexerConfig } from './gherkin-lexer.js';
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS = async (config,parser,featureSrc) => {
-    const feature = parse(parser,featureSrc);
+const compileFeatureToJS = async (config,featureSrc) => {
+    const feature = await parse(featureSrc);
 
     const code = await generateFeature(config,feature);
 
@@ -64,8 +64,7 @@ export const DataTable = (dataTable) => {
 
 export default function vitestCucumberPlugin() {
     let config;
-    let parser;
-    
+
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
@@ -77,7 +76,9 @@ export default function vitestCucumberPlugin() {
 
             log.debug({ config }, 'config');
 
-            gherkinLexer.config(config);
+            // Nearley has no mechanism for passing user data into the parser so need to do some hacky stuff here
+            // and setup some globals to get around the limitations.
+            gherkinLexerConfig(config);
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {

@@ -1,5 +1,6 @@
-import require$$0$1 from 'lodash/fp.js';
-import require$$0 from 'moo';
+import require$$0 from 'lodash/fp.js';
+import require$$1 from 'moo';
+import require$$2 from '/home/sam/src/vitest-cucumber-plugin/src/gherkin-lexer-shared.cjs';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -7,54 +8,22 @@ function getDefaultExportFromCjs (x) {
 
 var gherkin_umd$1 = {exports: {}};
 
-const moo = require$$0;
-
-let lexer = moo.compile({
-    emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
-    newline : { match : '\n', lineBreaks : true },
-    ws : /[ \t]+/,
-    at : '@',
-    colon : ':',
-    repeatStep : '*',
-    pipe : '|',
-    escapedPipe : '\\|',
-    escapedNewline : '\\n',
-    escapedBackSlash : '\\\\',
-    scenarioOutline : ['Scenario Outline','Scenario Template'],
-    docString : ['```','"""'],
-    word : {
-        match : /[^ \t\n\:\|\@\*]+/,
-        type : moo.keywords({
-            feature : 'Feature',
-            examples : ['Examples','Scenarios'],
-            given : 'Given',
-            when : 'When',
-            then : 'Then',
-            repeatStep : ['And','But'],
-            example : ['Example','Scenario'],
-            background : 'Background',
-            rule : 'Rule',
-        }),
-    },
-});
-
-const config = (options) => {
-};
-
-var gherkinLexer = {
-    lexer : () => lexer,
-    config,
-};
-
 (function (module) {
 	// Generated automatically by nearley, version 2.20.1
 	// http://github.com/Hardmath123/nearley
 	(function () {
 
-	const fp = require$$0$1;
+	const fp = require$$0;
+	const moo = require$$1;
 
-	const gherkinLexer$1 = gherkinLexer;
-	const lexer = gherkinLexer$1.lexer();
+	const gherkinLexerShared = require$$2;
+
+	const transformKeywords = (states) => fp.mapValues((state) =>
+	    fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state))(states);
+
+	gherkinLexerShared.states = transformKeywords(gherkinLexerShared.states);
+
+	const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
 	const trimWhitespace = (cols,str) => {
 	  const lines = str.split('\n').slice(0,-1);
@@ -103,7 +72,7 @@ var gherkinLexer = {
 	    {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
 	        (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 	        },
-	    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
 	    {"name": "exampleList", "symbols": [], "postprocess": data => []},
 	    {"name": "exampleList", "symbols": ["exampleList", "example"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "scenarioOutline", "symbols": ["tags", "scenarioOutlineStatement", "steps", "examplesList"], "postprocess": 
