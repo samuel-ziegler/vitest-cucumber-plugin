@@ -7,7 +7,6 @@ Given("I have a test component") do(state, params, data)
 	imba.mount(<my-app>)
 	state
 
-When("I do nothing") do(state, params, data) state
 
 Then('the test component text is {string}') do(state, [text], data)
 	waitFor do expect(screen.getByText(text)).toBeTruthy!
