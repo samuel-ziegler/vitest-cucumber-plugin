@@ -4,10 +4,10 @@ import { generateExample, generateScenarioOutline, generateRule } from './index.
 import { escape, shouldSkip } from './util.js';
 import { glob } from 'glob';
 
-const findJsFiles = async () => glob('features/**/*.js');
 
 export const generateFeature = async (config,feature) => {
-    const name = feature.name;
+	const findJsFiles = async () => glob([`features/**/*{${config.extensions.join(',')}}`]);
+	const name = feature.name;
     const statements = feature.statements;
 
     const testStatements = _.reduce((testStatements,statement) => {
