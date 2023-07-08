@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "postinstall": "npm link vitest-cucumber-plugin imba"
   },
   "keywords": [],
