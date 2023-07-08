@@ -6,8 +6,8 @@ import { glob } from 'glob';
 
 
 export const generateFeature = async (config,feature) => {
-	const findJsFiles = async () => glob([`features/**/*{${config.extensions.join(',')}}`]);
-	const name = feature.name;
+    const findJsFiles = async () => glob([`features/**/*{${config.extensions.join(',')}}`]);
+    const name = feature.name;
     const statements = feature.statements;
 
     const testStatements = _.reduce((testStatements,statement) => {
