@@ -1,34 +1,16 @@
 @{%
 const fp = require('lodash/fp.js');
 const moo = require('moo');
-const lexer = moo.compile({
-  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
-  newline : { match : '\n', lineBreaks : true },
-  ws : /[ \t]+/,
-  at : '@',
-  colon : ':',
-  repeatStep : '*',
-  pipe : '|',
-  escapedPipe : '\\|',
-  escapedNewline : '\\n',
-  escapedBackSlash : '\\\\',
-  scenarioOutline : ['Scenario Outline','Scenario Template'],
-  docString : ['```','"""'],
-  word : {
-    match : /[^ \t\n\:\|\@\*]+/,
-    type : moo.keywords({
-      feature : 'Feature',
-      examples : ['Examples','Scenarios'],
-      given : 'Given',
-      when : 'When',
-      then : 'Then',
-      repeatStep : ['And','But'],
-      example : ['Example','Scenario'],
-      background : 'Background',
-      rule : 'Rule',
-    }),
-  },
-});
+
+const gherkinLexerShared = require('./gherkin-lexer-shared.cjs');
+
+const transformKeywords = (state) => fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state);
+
+const transformStates = (states) => fp.mapValues(transformKeywords)(states);
+
+gherkinLexerShared.states = transformStates(gherkinLexerShared.states);
+
+const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
 const trimWhitespace = (cols,str) => {
   const lines = str.split('\n').slice(0,-1);
@@ -50,7 +32,19 @@ const setRepeatStepTypes = (steps) => fp.reduce(setRepeatStepTypesReducer,[],ste
 
 @lexer lexer
 
-main -> emptyLines tags feature {% data => fp.set('tags',data[1],data[2]) %}
+main -> body {% data => data[0] %}
+  | language body {% data => data[1] %}
+
+language -> %language {%
+  (data) => {
+    const languageRegex = /^#[ \t]*language:[ \t]*([a-z\-A-Z]+)\n/;
+    const languageMatches = data[0].value.match(languageRegex);
+    const newLanguage = languageMatches[1];
+    lexer.setState(newLanguage);
+  }
+%}
+
+body -> emptyLines tags feature {% data => fp.set('tags',data[1],data[2]) %}
 
 feature -> featureStatement freeform background statements {%
   (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
@@ -87,7 +81,7 @@ example -> tags exampleStatement steps {% (data) => fp.assign(data[1],{ tags : d
 exampleStatement -> _ exampleKeyword _ %colon text %newline {%
   (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 %}
-exampleKeyword -> %example {% data => data[0].value %}
+exampleKeyword -> %scenario {% data => data[0].value %}
 
 exampleList -> null {% data => [] %}
   | exampleList example {% data => fp.concat(data[0],data[1]) %}
@@ -180,7 +174,7 @@ keywords -> %given {% data => data[0].value %}
   | %then {% data => data[0].value %}
   | %repeatStep {% data => data[0].value %}
   | %colon {% data => data[0].value %}
-  | %example {% data => data[0].value %}
+  | %scenario {% data => data[0].value %}
   | %examples {% data => data[0].value %}
   | %scenarioOutline {% data => data[0].value %}
   | %background {% data => data[0].value %}

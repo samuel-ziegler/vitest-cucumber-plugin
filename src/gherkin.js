@@ -1,5 +1,6 @@
 import require$$0 from 'lodash/fp.js';
 import require$$1 from 'moo';
+import require$$2 from './gherkin-lexer-shared.cjs';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -14,34 +15,16 @@ var gherkin_umd$1 = {exports: {}};
 
 	const fp = require$$0;
 	const moo = require$$1;
-	const lexer = moo.compile({
-	  emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
-	  newline : { match : '\n', lineBreaks : true },
-	  ws : /[ \t]+/,
-	  at : '@',
-	  colon : ':',
-	  repeatStep : '*',
-	  pipe : '|',
-	  escapedPipe : '\\|',
-	  escapedNewline : '\\n',
-	  escapedBackSlash : '\\\\',
-	  scenarioOutline : ['Scenario Outline','Scenario Template'],
-	  docString : ['```','"""'],
-	  word : {
-	    match : /[^ \t\n\:\|\@\*]+/,
-	    type : moo.keywords({
-	      feature : 'Feature',
-	      examples : ['Examples','Scenarios'],
-	      given : 'Given',
-	      when : 'When',
-	      then : 'Then',
-	      repeatStep : ['And','But'],
-	      example : ['Example','Scenario'],
-	      background : 'Background',
-	      rule : 'Rule',
-	    }),
-	  },
-	});
+
+	const gherkinLexerShared = require$$2;
+
+	const transformKeywords = (state) => fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state);
+
+	const transformStates = (states) => fp.mapValues(transformKeywords)(states);
+
+	gherkinLexerShared.states = transformStates(gherkinLexerShared.states);
+
+	const lexer = moo.states(gherkinLexerShared.states,gherkinLexerShared.language);
 
 	const trimWhitespace = (cols,str) => {
 	  const lines = str.split('\n').slice(0,-1);
@@ -62,7 +45,17 @@ var gherkin_umd$1 = {exports: {}};
 	var grammar = {
 	    Lexer: lexer,
 	    ParserRules: [
-	    {"name": "main", "symbols": ["emptyLines", "tags", "feature"], "postprocess": data => fp.set('tags',data[1],data[2])},
+	    {"name": "main", "symbols": ["body"], "postprocess": data => data[0]},
+	    {"name": "main", "symbols": ["language", "body"], "postprocess": data => data[1]},
+	    {"name": "language", "symbols": [(lexer.has("language") ? {type: "language"} : language)], "postprocess": 
+	        (data) => {
+	          const languageRegex = /^#[ \t]*language:[ \t]*([a-z\-A-Z]+)\n/;
+	          const languageMatches = data[0].value.match(languageRegex);
+	          const newLanguage = languageMatches[1];
+	          lexer.setState(newLanguage);
+	        }
+	        },
+	    {"name": "body", "symbols": ["emptyLines", "tags", "feature"], "postprocess": data => fp.set('tags',data[1],data[2])},
 	    {"name": "feature", "symbols": ["featureStatement", "freeform", "background", "statements"], "postprocess": 
 	        (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
 	        },
@@ -90,7 +83,7 @@ var gherkin_umd$1 = {exports: {}};
 	    {"name": "exampleStatement", "symbols": ["_", "exampleKeyword", "_", (lexer.has("colon") ? {type: "colon"} : colon), "text", (lexer.has("newline") ? {type: "newline"} : newline)], "postprocess": 
 	        (data) => { return { type : { type : 'example', name : data[1] }, name : data[4].trim() } }
 	        },
-	    {"name": "exampleKeyword", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "exampleKeyword", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
 	    {"name": "exampleList", "symbols": [], "postprocess": data => []},
 	    {"name": "exampleList", "symbols": ["exampleList", "example"], "postprocess": data => fp.concat(data[0],data[1])},
 	    {"name": "scenarioOutline", "symbols": ["tags", "scenarioOutlineStatement", "steps", "examplesList"], "postprocess": 
@@ -163,7 +156,7 @@ var gherkin_umd$1 = {exports: {}};
 	    {"name": "keywords", "symbols": [(lexer.has("then") ? {type: "then"} : then)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("repeatStep") ? {type: "repeatStep"} : repeatStep)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("colon") ? {type: "colon"} : colon)], "postprocess": data => data[0].value},
-	    {"name": "keywords", "symbols": [(lexer.has("example") ? {type: "example"} : example)], "postprocess": data => data[0].value},
+	    {"name": "keywords", "symbols": [(lexer.has("scenario") ? {type: "scenario"} : scenario)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("examples") ? {type: "examples"} : examples)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("scenarioOutline") ? {type: "scenarioOutline"} : scenarioOutline)], "postprocess": data => data[0].value},
 	    {"name": "keywords", "symbols": [(lexer.has("background") ? {type: "background"} : background)], "postprocess": data => data[0].value},

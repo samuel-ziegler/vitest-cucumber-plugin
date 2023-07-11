@@ -4,7 +4,7 @@ import { escape, shouldSkip } from './util.js';
 import { log } from '../logger.js';
 
 export const generateRule = (config,rule) => {
-    log.debug('generateRule config: '+JSON.stringify(config)+' rule: '+JSON.stringify(rule));
+    log.debug(`generateRule config: ${JSON.stringify(config)} rule: ${JSON.stringify(rule)}`);
     
     const examplesCode = _.reduce((examplesCode,example) => {
         return examplesCode + generateExample(config,example);

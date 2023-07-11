@@ -13,11 +13,12 @@ import {
     BeforeStep, applyBeforeStepHooks,
     AfterStep, applyAfterStepHooks,
 } from './hooks.js';
+import { gherkinLexerConfig } from './gherkin-lexer.js';
 
 const featureRegex = /\.feature$/;
 
 const compileFeatureToJS = async (config,featureSrc) => {
-    const feature = parse(featureSrc);
+    const feature = await parse(featureSrc);
 
     const code = await generateFeature(config,feature);
 
@@ -42,16 +43,14 @@ export const When = addStepDefinition;
 export const Then = addStepDefinition;
 
 export const Test = (state,step) => {
-    log.debug('Test step: '+JSON.stringify(step)+' state:'+JSON.stringify(state));
+    log.debug({ step, state }, 'Test step');
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
     const extraData = step.dataTable ? step.dataTable : (step.docString ? step.docString.text : null );
 
     const newState = stepDefinitionMatch.stepDefinition.f(state,stepDefinitionMatch.parameters,extraData);
-    log.info(step.type.name+'(\''+stepDefinitionMatch.stepDefinition.expression+'\') ('+
-             JSON.stringify(state)+','+JSON.stringify(stepDefinitionMatch.parameters)+','+JSON.stringify(extraData)+
-             ') => '+JSON.stringify(newState));
-    log.debug('Test newState: '+JSON.stringify(newState));
+    log.info({ state, newState, extraData, parameters: stepDefinitionMatch.parameters }, `${step.type.name}('${stepDefinitionMatch.stepDefinition.expression}')`);
+    log.debug({ newState }, 'Test newState');
 
     return newState;
 };
@@ -65,23 +64,27 @@ export const DataTable = (dataTable) => {
 
 export default function vitestCucumberPlugin() {
     let config;
-    
+
     return {
         name : 'vitest-cucumber-transform',
         configResolved : (resolvedConfig) => {
-            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' } },
+            config = _.defaults({ root : resolvedConfig.root, log : { level : 'warn' }, language : 'en' },
                                 _.get('test.cucumber',resolvedConfig))
             logConfig(config.log);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
 
-            log.debug('config: '+JSON.stringify(config));
+            log.debug({ config }, 'config');
+
+            // Nearley has no mechanism for passing user data into the parser so need to do some hacky stuff here
+            // and setup some globals to get around the limitations.
+            gherkinLexerConfig(config);
         },
         transform : async (src,id) => {
             if (featureRegex.test(id)) {
                 const code = await compileFeatureToJS(config,src);
 
-                log.debug('transform '+id+' -> '+code);
+                log.debug(`transform ${id} -> ${code}`);
 
                 return {
                     code

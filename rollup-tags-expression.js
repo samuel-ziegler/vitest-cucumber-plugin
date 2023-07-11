@@ -6,5 +6,6 @@ export default {
         file: "src/tags-expression.js",
         format: "es",
     },
+    external : [ 'moo', 'lodash/fp.js' ],
     plugins: [commonjs()],
 };

@@ -13,7 +13,7 @@ const typeName = {
 const expressionFactory = new ExpressionFactory(new ParameterTypeRegistry());
 
 export const addStepDefinition = (expression,f) => {
-    log.debug('addStepDefinition expression: '+JSON.stringify(expression));
+    log.debug({ expression }, 'addStepDefinition expression');
     const cucumberExpression = expressionFactory.createExpression(expression);
     steps = _.concat(steps,{ expression, f, cucumberExpression });
 }
