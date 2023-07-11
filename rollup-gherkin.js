@@ -8,4 +8,5 @@ export default {
     },
     external : [ 'moo', 'lodash/fp.js', './gherkin-lexer-shared.cjs' ],
     plugins: [commonjs()],
+    makeAbsoluteExternalsRelative : false,
 };

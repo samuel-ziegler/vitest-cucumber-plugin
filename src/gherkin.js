@@ -1,6 +1,6 @@
 import require$$0 from 'lodash/fp.js';
 import require$$1 from 'moo';
-import require$$2 from '/home/sam/src/vitest-cucumber-plugin/src/gherkin-lexer-shared.cjs';
+import require$$2 from './gherkin-lexer-shared.cjs';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
