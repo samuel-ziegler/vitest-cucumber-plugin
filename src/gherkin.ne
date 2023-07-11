@@ -32,7 +32,19 @@ const setRepeatStepTypes = (steps) => fp.reduce(setRepeatStepTypesReducer,[],ste
 
 @lexer lexer
 
-main -> emptyLines tags feature {% data => fp.set('tags',data[1],data[2]) %}
+main -> body {% data => data[0] %}
+  | language body {% data => data[1] %}
+
+language -> %language {%
+  (data) => {
+    const languageRegex = /^#[ \t]*language:[ \t]*([a-z\-A-Z]+)\n/;
+    const languageMatches = data[0].value.match(languageRegex);
+    const newLanguage = languageMatches[1];
+    lexer.setState(newLanguage);
+  }
+%}
+
+body -> emptyLines tags feature {% data => fp.set('tags',data[1],data[2]) %}
 
 feature -> featureStatement freeform background statements {%
   (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })

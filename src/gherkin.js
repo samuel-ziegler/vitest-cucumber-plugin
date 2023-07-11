@@ -45,7 +45,17 @@ var gherkin_umd$1 = {exports: {}};
 	var grammar = {
 	    Lexer: lexer,
 	    ParserRules: [
-	    {"name": "main", "symbols": ["emptyLines", "tags", "feature"], "postprocess": data => fp.set('tags',data[1],data[2])},
+	    {"name": "main", "symbols": ["body"], "postprocess": data => data[0]},
+	    {"name": "main", "symbols": ["language", "body"], "postprocess": data => data[1]},
+	    {"name": "language", "symbols": [(lexer.has("language") ? {type: "language"} : language)], "postprocess": 
+	        (data) => {
+	          const languageRegex = /^#[ \t]*language:[ \t]*([a-z\-A-Z]+)\n/;
+	          const languageMatches = data[0].value.match(languageRegex);
+	          const newLanguage = languageMatches[1];
+	          lexer.setState(newLanguage);
+	        }
+	        },
+	    {"name": "body", "symbols": ["emptyLines", "tags", "feature"], "postprocess": data => fp.set('tags',data[1],data[2])},
 	    {"name": "feature", "symbols": ["featureStatement", "freeform", "background", "statements"], "postprocess": 
 	        (data) => fp.assign(data[0],{ description : data[1].trim(), background : data[2], statements : data[3] })
 	        },

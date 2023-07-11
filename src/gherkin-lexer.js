@@ -3,6 +3,7 @@ import gherkinLexerShared from './gherkin-lexer-shared.cjs';
 import fs from 'fs';
 
 const base = {
+    language : { match : /^#[ \t]*language:[ \t]*[a-z\-A-Z]+\n/, lineBreaks  : true },
     emptyLine : { match: /^[ \t]*(?:\#[^\n]+)?\n/, lineBreaks : true },
     newline : { match : '\n', lineBreaks : true },
     ws : /[ \t]+/,
