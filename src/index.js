@@ -73,6 +73,7 @@ export default function vitestCucumberPlugin() {
             logConfig(config.log);
 
             config = _.set('tagsFunction',tagsFunction(_.get('tags',config)),config);
+            config = _.set('extensions', resolvedConfig.resolve.extensions, config)
 
             log.debug({ config }, 'config');
 
