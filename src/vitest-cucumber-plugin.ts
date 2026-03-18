@@ -46,7 +46,7 @@ const Test: (state: State, step: StepStatement) => State = (state, step) => {
     log.debug({ step, state }, 'Test step');
     const stepDefinitionMatch = findStepDefinitionMatch(step);
 
-    const extraData = step.dataTable ? step.dataTable : step.docString ? step.docString.text : null;
+    const extraData = step.dataTable ? step.dataTable : step.docString ? step.docString.text : undefined;
 
     const newState = stepDefinitionMatch.stepDefinition.f(state, stepDefinitionMatch.parameters, extraData);
     log.info(
@@ -129,4 +129,5 @@ export {
     AfterStep,
     DataTable,
     vitestCucumberPlugin,
+    State,
 };

@@ -1,3 +1,3 @@
-type State<T extends {} = {}> = T;
+interface State {}
 
 export { State };

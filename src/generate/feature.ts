@@ -8,7 +8,7 @@ import { Statement, Rule, Example, isStatementType, Feature } from '../statement
 import { generateScenarioOutline } from './scenario-outline.js';
 import { VitestCucumberPluginConfig } from '../config.js';
 
-const findJsFiles: () => Promise<string[]> = async () => glob('features/**/*.js');
+const findJsFiles: () => Promise<string[]> = async () => glob('features/**/*.[jt]s');
 
 const generateFeature: (config: VitestCucumberPluginConfig, feature: Feature) => Promise<string> = async (
     config,

@@ -9,9 +9,18 @@ interface HookOptsObject {
     tags?: string;
 }
 
-type HookOpts = Function | string | HookOptsObject;
+type MaybePromise<T> = T | Promise<T>;
+
+type HookFunction<R extends State | undefined = undefined, S extends State = State> = [R] extends [undefined]
+    ? (state: S) => MaybePromise<void | object>
+    : (state: S) => MaybePromise<R>;
+
+type HookOpts = HookFunction | string | HookOptsObject;
 type ApplyHooksFunction = (state: State, tags?: Tags) => Promise<State>;
-type HookFunction = (opts: HookOpts, f: Function) => void;
+type AddHookFunction = <R extends State = State, S extends State = State>(
+    opts: HookOpts,
+    f: HookFunction<R, S>,
+) => void;
 
 interface Hook {
     name: string;
@@ -64,6 +73,9 @@ const applyHooks: (hooksName: HookTypes, state: State, tags?: Tags) => Promise<S
         if (result) {
             const origState = state;
             state = await hook.f(state);
+
+            state = state ? state : origState;
+
             log.info({ state, origState }, `${hookNames[hooksName]}('${hook.name}')`);
         }
     }
@@ -101,32 +113,32 @@ const addHook: (hooksName: HookTypes, opts: HookOpts, f: Function) => void = (ho
     allHooks[hooksName] = _.concat(allHooks[hooksName], hook);
 };
 
-const BeforeAll: HookFunction = (opts, f) => {
+const BeforeAll: AddHookFunction = (opts, f) => {
     addHook(HookTypes.BeforeAll, opts, f);
 };
 const applyBeforeAllHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.BeforeAll, state, tags);
 
-const Before: HookFunction = (opts, f) => {
+const Before: AddHookFunction = (opts, f) => {
     addHook(HookTypes.Before, opts, f);
 };
 const applyBeforeHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.Before, state, tags);
 
-const BeforeStep: HookFunction = (opts, f) => {
+const BeforeStep: AddHookFunction = (opts, f) => {
     addHook(HookTypes.BeforeStep, opts, f);
 };
 const applyBeforeStepHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.BeforeStep, state, tags);
 
-const AfterAll: HookFunction = (opts, f) => {
+const AfterAll: AddHookFunction = (opts, f) => {
     addHook(HookTypes.AfterAll, opts, f);
 };
 const applyAfterAllHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.AfterAll, state, tags);
 
-const After: HookFunction = (opts, f) => {
+const After: AddHookFunction = (opts, f) => {
     addHook(HookTypes.After, opts, f);
 };
 const applyAfterHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.After, state, tags);
 
-const AfterStep: HookFunction = (opts, f) => {
+const AfterStep: AddHookFunction = (opts, f) => {
     addHook(HookTypes.AfterStep, opts, f);
 };
 const applyAfterStepHooks: ApplyHooksFunction = (state, tags) => applyHooks(HookTypes.AfterStep, state, tags);

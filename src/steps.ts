@@ -4,15 +4,21 @@ import { log } from './logger.js';
 import { State } from './state.js';
 import { StepStatement } from './statement.js';
 
-type StepFunction = (state: State, args: any[], data: any) => State | undefined;
+type MaybePromise<T> = T | Promise<T>;
 
-interface StepDefinition {
+type StepFunction<R extends State | undefined = undefined, S extends State = State, A extends any[] = any> = [
+    R,
+] extends [undefined]
+    ? (state: S, args: A, data?: Array<Array<string>> | string) => MaybePromise<void | object>
+    : (state: S, args: A, data?: Array<Array<string>> | string) => MaybePromise<R>;
+
+interface StepDefinition<R extends State | undefined = undefined, S extends State = State, A extends any[] = any> {
     expression: string;
-    f: StepFunction;
+    f: StepFunction<R, S, A>;
     cucumberExpression: Expression;
 }
 
-var steps: Array<StepDefinition> = [];
+var steps: Array<StepDefinition<any, any, any>> = [];
 
 const typeName = {
     given: 'Given',
@@ -22,7 +28,10 @@ const typeName = {
 
 const expressionFactory = new ExpressionFactory(new ParameterTypeRegistry());
 
-const addStepDefinition: (expression: string, f: StepFunction) => void = (expression, f) => {
+const addStepDefinition: <R extends State | undefined = undefined, S extends State = State, A extends any[] = any>(
+    expression: string,
+    f: StepFunction<R, S, A>,
+) => void = (expression, f) => {
     log.debug({ expression }, 'addStepDefinition expression');
     const cucumberExpression = expressionFactory.createExpression(expression);
     steps = _.concat(steps, { expression, f, cucumberExpression });
