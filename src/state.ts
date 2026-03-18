@@ -1,0 +1,3 @@
+interface State {}
+
+export { State };

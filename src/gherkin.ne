@@ -2,7 +2,7 @@
 const fp = require('lodash/fp.js');
 const moo = require('moo');
 
-const gherkinLexerShared = require('./gherkin-lexer-shared.cjs');
+const gherkinLexerShared = require('./gherkin-lexer-shared.js');
 
 const transformKeywords = (state) => fp.set(['word','type'],moo.keywords(state.word.rawKeywords),state);
 

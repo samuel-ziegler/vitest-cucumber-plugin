@@ -1,0 +1,1 @@
+{"version":3,"file":"examples.d.ts","sourceRoot":"","sources":["../../src/generate/examples.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,QAAQ,EAAE,aAAa,EAAE,MAAM,iBAAiB,CAAC;AAC1D,OAAO,EAAE,0BAA0B,EAAE,MAAM,cAAc,CAAC;AA6D1D,QAAA,MAAM,gBAAgB,EAAE,CACpB,MAAM,EAAE,0BAA0B,EAClC,KAAK,EAAE,KAAK,CAAC,aAAa,CAAC,EAC3B,iBAAiB,EAAE,QAAQ,KAC1B,MAkBJ,CAAC;AAEF,OAAO,EAAE,gBAAgB,EAAE,CAAC"}
