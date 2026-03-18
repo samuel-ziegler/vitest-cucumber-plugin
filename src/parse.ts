@@ -1,7 +1,7 @@
 import nearley from 'nearley';
 import { log } from './logger.js';
 
-let gherkinSingleton;
+let gherkinSingleton: any;
 
 const parser = async () => {
     if (!gherkinSingleton) {
@@ -14,7 +14,7 @@ const parser = async () => {
     return new nearley.Parser(nearley.Grammar.fromCompiled(gherkinSingleton));
 };
 
-export const parse = async (src) => {
+const parse = async (src: string) => {
     const myParser = await parser();
     log.debug(`parsing src: ${src}`);
     myParser.feed(src);
@@ -24,9 +24,11 @@ export const parse = async (src) => {
     }
     log.debug({ results: myParser.results }, 'parsing result');
     if (myParser.results.length > 1) {
-        throw new Error('Ambiguous parsing: '+myParser.results.length);
+        throw new Error('Ambiguous parsing: ' + myParser.results.length);
     }
-    
+
     const results = myParser.results;
     return results[0];
-}
+};
+
+export { parse };
