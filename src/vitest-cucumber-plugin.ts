@@ -1,7 +1,6 @@
 import { Vite } from 'vitest/node';
 import _ from 'lodash/fp.js';
 import { addStepDefinition, findStepDefinitionMatch } from './steps.js';
-import { parameterizeText } from './parameterize.js';
 import { generateFeature } from './generate/index.js';
 import { log, logConfig } from './logger.js';
 import { parse } from './parse.js';
@@ -27,13 +26,18 @@ import { StepStatement } from './statement.js';
 
 const featureRegex = /\.feature$/;
 
-const compileFeatureToJS: (config: VitestCucumberPluginConfig, featureSrc: string) => Promise<string> = async (
-    config,
-    featureSrc,
-) => {
-    const feature = await parse(featureSrc);
+interface CompileFeatureToJsOptions {
+    config: VitestCucumberPluginConfig;
+    featureSource: string;
+    featurePath: string;
+}
 
-    const code = await generateFeature(config, feature);
+const compileFeatureToJs: (options: CompileFeatureToJsOptions) => Promise<string> = async (options) => {
+    const { config, featureSource, featurePath } = options;
+
+    const feature = await parse(featureSource);
+
+    const code = await generateFeature({ config, feature, featurePath });
 
     return code;
 };
@@ -81,7 +85,12 @@ const vitestCucumberPlugin: () => Vite.Plugin = () => {
         name: 'vitest-cucumber-transform',
         configResolved: (resolvedConfig) => {
             config = _.defaults(
-                { root: resolvedConfig.root, log: { level: 'warn' }, language: 'en' },
+                {
+                    root: resolvedConfig.root,
+                    log: { level: 'warn' },
+                    language: 'en',
+                    stepDefinitions: { include: 'features/**/*.[jt]s' },
+                },
                 _.get('test.cucumber', resolvedConfig),
             );
             logConfig(config.log);
@@ -96,7 +105,7 @@ const vitestCucumberPlugin: () => Vite.Plugin = () => {
         },
         transform: async (src, id) => {
             if (featureRegex.test(id)) {
-                const code = await compileFeatureToJS(config, src);
+                const code = await compileFeatureToJs({ config, featureSource: src, featurePath: id });
 
                 log.debug(`transform ${id} -> ${code}`);
 

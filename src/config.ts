@@ -4,6 +4,9 @@ import { LoggerOptions } from './logger.js';
 interface VitestCucumberPluginConfig {
     tagsFunction: (tags?: Tags) => boolean;
     log: LoggerOptions;
+    stepDefinitions: {
+        include: string | string[];
+    };
 }
 
 export { VitestCucumberPluginConfig };

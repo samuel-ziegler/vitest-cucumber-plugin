@@ -7,13 +7,25 @@ import { generateRule } from './rule.js';
 import { Statement, Rule, Example, isStatementType, Feature } from '../statement.js';
 import { generateScenarioOutline } from './scenario-outline.js';
 import { VitestCucumberPluginConfig } from '../config.js';
+import path from 'node:path';
 
-const findJsFiles: () => Promise<string[]> = async () => glob('features/**/*.[jt]s');
+interface FindJsFileOptions {
+    include: string | string[];
+}
 
-const generateFeature: (config: VitestCucumberPluginConfig, feature: Feature) => Promise<string> = async (
-    config,
-    feature,
-) => {
+const findJsFiles: (options: FindJsFileOptions) => Promise<string[]> = async (options) => glob(options.include);
+
+interface GenerateFeatureOptions {
+    config: VitestCucumberPluginConfig;
+    feature: Feature;
+    featurePath: string;
+}
+
+const generateFeature: (options: GenerateFeatureOptions) => Promise<string> = async (options) => {
+    log.debug({ generateFeature: { options } });
+
+    const { config, feature, featurePath } = options;
+
     const name = feature.name;
     const statements = feature.statements;
 
@@ -36,18 +48,21 @@ const generateFeature: (config: VitestCucumberPluginConfig, feature: Feature) =>
     }, '')(statements);
 
     const skip = shouldSkip(config, feature.tags) ? '.skip' : '';
-    const configStr = JSON.stringify(config);
     const tagsStr = JSON.stringify(feature.tags);
 
+    const cwd = process.cwd();
+
     const jsFilesImportReducer = (imports: string, file: string) => {
-        file = file.slice('features/'.length);
+        const absolutePath = `${cwd}/${file}`;
+        const relativePath = path.relative(path.dirname(featurePath), absolutePath);
         return (
             imports +
             `
-import './${file}';`
+import './${relativePath}';`
         );
     };
-    const jsFiles = await findJsFiles();
+    const jsFiles = await findJsFiles(config.stepDefinitions);
+    log.debug({ featurePath, cwd, jsFiles });
     const jsFilesImport = _.reduce(jsFilesImportReducer, '', jsFiles);
 
     const code = `import { expect, test, describe, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
