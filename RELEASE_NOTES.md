@@ -1,3 +1,4 @@
+* v0.6.2 : Fixed package.json files
 * v0.6.1 : TypeScript rewrite & support
 * v0.6.0 : Language support
 * v0.5.6 : Fixed issue #25 which was preventing at symbols from being used in data tables
