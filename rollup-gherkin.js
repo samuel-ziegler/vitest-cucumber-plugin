@@ -6,7 +6,7 @@ export default {
         file: "src/gherkin.js",
         format: "es",
     },
-    external : [ 'moo', 'lodash/fp.js', './gherkin-lexer-shared.cjs' ],
+    external : [ 'moo', 'lodash/fp.js', './gherkin-lexer-shared.js' ],
     plugins: [commonjs()],
     makeAbsoluteExternalsRelative : false,
 };

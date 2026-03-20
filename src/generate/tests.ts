@@ -2,8 +2,14 @@ import _ from 'lodash/fp.js';
 import { escape } from './util.js';
 import { parameterizeText } from '../parameterize.js';
 import { log } from '../logger.js';
+import { StepStatement } from '../statement.js';
 
-export const generateTests = (steps,parameterMap,tags,extraIndent) => {
+const generateTests: (
+    steps: StepStatement[],
+    parameterMap: Record<string, string>,
+    tags?: string[],
+    extraIndent?: string,
+) => string = (steps, parameterMap, tags, extraIndent) => {
     log.debug(`generateTests steps : ${JSON.stringify(steps)}`);
     const tagsStr = JSON.stringify(tags);
     const indent = extraIndent ? extraIndent : '';
@@ -13,16 +19,20 @@ ${indent}    beforeEach(async () => { state = await applyBeforeStepHooks(state,$
 ${indent}    afterAll(async () => { state = await applyAfterHooks(state,${tagsStr}); });
 ${indent}    afterEach(async () => { state = await applyAfterStepHooks(state,${tagsStr}); });
 `;
-    
+
     _.forEach((step) => {
-        const parameterizedText = ( parameterMap ? parameterizeText(step.text,parameterMap) : step.text);
+        const parameterizedText = parameterMap ? parameterizeText(step.text, parameterMap) : step.text;
         const name = parameterizedText;
-        const parameterizedStep = _.set('text',parameterizedText,step);
+        const parameterizedStep = _.set('text', parameterizedText, step);
 
         const stepString = JSON.stringify(parameterizedStep);
-        tests = tests+`
+        tests =
+            tests +
+            `
 ${indent}    test('${escape(step.type.name)} ${escape(name)}', () => { state = Test(state,${stepString}); });`;
-    },steps);
+    }, steps);
 
     return tests;
 };
+
+export { generateTests };
