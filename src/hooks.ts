@@ -11,15 +11,15 @@ interface HookOptsObject {
 
 type MaybePromise<T> = T | Promise<T>;
 
-type HookFunction<R extends State | undefined = undefined, S extends State = State> = [R] extends [undefined]
+type HookFunction<S extends State = State, R extends State | undefined = undefined> = [R] extends [undefined]
     ? (state: S) => MaybePromise<void | object>
     : (state: S) => MaybePromise<R>;
 
 type HookOpts = HookFunction | string | HookOptsObject;
 type ApplyHooksFunction = (state: State, tags?: Tags) => Promise<State>;
-type AddHookFunction = <R extends State = State, S extends State = State>(
+type AddHookFunction = <S extends State = State, R extends State = State>(
     opts: HookOpts,
-    f: HookFunction<R, S>,
+    f: HookFunction<S, R>,
 ) => void;
 
 interface Hook {
